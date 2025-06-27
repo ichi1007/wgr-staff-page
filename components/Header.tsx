@@ -27,7 +27,7 @@ export default function HeaderComp() {
         <h1 className="text-black font-extrabold text-xl">WGR Staff Page</h1>
       </Link>
       {/* アカウント情報 */}
-      <div className="mr-50">
+      <>
         <DropdownMenu open={open} onOpenChange={setOpen}>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 px-3 py-1 rounded-md hover:bg-gray-100 transition cursor-pointer">
@@ -76,7 +76,7 @@ export default function HeaderComp() {
             )}
           </AnimatePresence>
         </DropdownMenu>
-      </div>
+      </>
     </header>
   );
 }
