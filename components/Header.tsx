@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
+import { LogOut, UserRound } from "lucide-react";
 
 export default function HeaderComp() {
   // ドロップダウンの開閉状態管理
@@ -26,7 +27,7 @@ export default function HeaderComp() {
         <h1 className="text-black font-extrabold text-xl">WGR Staff Page</h1>
       </Link>
       {/* アカウント情報 */}
-      <div>
+      <div className="mr-50">
         <DropdownMenu open={open} onOpenChange={setOpen}>
           <DropdownMenuTrigger asChild>
             <button className="flex items-center gap-2 px-3 py-1 rounded-md hover:bg-gray-100 transition cursor-pointer">
@@ -56,7 +57,10 @@ export default function HeaderComp() {
                     asChild
                     className="py-2 px-4 cursor-pointer"
                   >
-                    <Link href="/mypage">マイページ</Link>
+                    <Link href="/mypage">
+                      <UserRound className="text-black" />
+                      マイページ
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="py-2 px-4 cursor-pointer"
@@ -64,6 +68,7 @@ export default function HeaderComp() {
                       // ログアウト処理をここに
                     }}
                   >
+                    <LogOut className="text-red-500" />
                     ログアウト
                   </DropdownMenuItem>
                 </motion.div>

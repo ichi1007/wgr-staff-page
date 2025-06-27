@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_JP, Noto_Sans } from "next/font/google";
 import "./globals.css";
 import HeaderComp from "@/components/Header";
+import FooterComp from "@/components/Footer";
 
 const Noto_sans_jp = Noto_Sans_JP({
   variable: "--font-noto-sans-jp",
@@ -29,7 +30,8 @@ export default function RootLayout({
         className={`${Noto_sans_jp.variable} ${Noto_sans.variable} antialiased`}
       >
         <HeaderComp />
-        {children}
+        <div className="pt-16">{children}</div>
+        <FooterComp />
       </body>
     </html>
   );
