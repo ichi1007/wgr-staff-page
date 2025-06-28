@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Logo from "@/public/img/wgr_logo.png";
 import Link from "next/link";
-// 追加: shadcn/ui, framer-motion
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -23,7 +22,7 @@ export default function HeaderComp() {
   const user = session?.user;
 
   return (
-    <header className="fixed w-full bg-white py-3 px-5 z-10 flex justify-between items-center shadow-md">
+    <header className="w-full py-3 px-5 z-10 flex justify-between items-center shadow-md">
       {/* ロゴ */}
       <div className="flex items-end">
         <Link href="/">
@@ -37,7 +36,7 @@ export default function HeaderComp() {
         </Link>
         <div className="w-[1px] h-[50px] bg-black mx-2" />
         <h1
-          className="text-black font-extrabold text-xl mb-2 select-none"
+          className="font-extrabold text-xl mb-2 select-none"
           draggable={false}
         >
           Staff Page
@@ -47,7 +46,7 @@ export default function HeaderComp() {
       {user && (
         <DropdownMenu open={open} onOpenChange={setOpen}>
           <DropdownMenuTrigger asChild>
-            <button className="flex items-center gap-2 px-3 py-1 rounded-md hover:bg-gray-100 transition cursor-pointer">
+            <button className="flex items-center gap-2 px-3 py-1 rounded-md bg-white hover:bg-gray-100 transition cursor-pointer border">
               <Avatar className="cursor-pointer w-8 h-8">
                 {/* Discordアイコン */}
                 {user.image ? (
@@ -56,7 +55,7 @@ export default function HeaderComp() {
                     alt={user.name ?? "avatar"}
                     width={32}
                     height={32}
-                    className="rounded-full object-cover w-full h-full"
+                    className="rounded-full object-cover border-2 w-full h-full"
                   />
                 ) : (
                   <AvatarFallback>{user?.name?.[0]}</AvatarFallback>
@@ -75,7 +74,7 @@ export default function HeaderComp() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.15 }}
-                  className="w-56 rounded-md bg-white shadow-lg border p-0 overflow-hidden"
+                  className="w-56 p-0 overflow-hidden"
                 >
                   <div className="px-4 py-3 border-b">
                     <div className="font-bold text-base">{user.name}</div>

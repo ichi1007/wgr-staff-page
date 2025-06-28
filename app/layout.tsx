@@ -32,7 +32,7 @@ export default function RootLayout({
       >
         <SessionWrapper>
           <HeaderComp />
-          <div className="pt-16">{children}</div>
+          <div>{children}</div>
           <FooterComp />
         </SessionWrapper>
       </body>
