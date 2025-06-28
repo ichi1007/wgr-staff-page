@@ -1,6 +1,7 @@
 "use client";
 
-import HomeBgVideo from "@/components/BgImage";
+import Image from "next/image";
+import WGR_IMG from "@/public/img/wgr-ogp.png";
 import DiscordButton from "@/components/DiscordButton";
 import { useSession } from "next-auth/react";
 import {
@@ -28,8 +29,15 @@ export default function TopPage() {
   return (
     <div className="relative w-full min-h-[calc(100vh-theme(spacing.16))]">
       {/* 背景動画 */}
-      <div className="absolute inset-0 -z-10">
-        <HomeBgVideo />
+      <div className="w-full min-h-[calc(100vh-theme(spacing.16))] z-[-999] pointer-events-none absolute">
+        <Image
+          src={WGR_IMG}
+          alt="WGR OGP Image"
+          fill
+          className="object-cover bg-center filter blur-sm select-none"
+          draggable={false}
+          priority
+        />
       </div>
       {/* 中央コンテンツ */}
       <div className="flex flex-1 justify-center items-center min-h-[calc(100vh-theme(spacing.16))]">
