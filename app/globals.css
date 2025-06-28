@@ -120,3 +120,10 @@
     @apply bg-background text-foreground;
   }
 }
+
+body[data-scroll-locked],
+html[data-scroll-locked],
+:root[data-scroll-locked],
+html body[data-scroll-locked] {
+  margin-right: 0 !important;
+}
