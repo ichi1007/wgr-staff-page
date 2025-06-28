@@ -3,6 +3,7 @@ import { Noto_Sans_JP, Noto_Sans } from "next/font/google";
 import "./globals.css";
 import HeaderComp from "@/components/Header";
 import FooterComp from "@/components/Footer";
+import SessionWrapper from "@/components/SessionWrapper";
 
 const Noto_sans_jp = Noto_Sans_JP({
   variable: "--font-noto-sans-jp",
@@ -29,9 +30,11 @@ export default function RootLayout({
       <body
         className={`${Noto_sans_jp.variable} ${Noto_sans.variable} antialiased`}
       >
-        <HeaderComp />
-        <div className="pt-16">{children}</div>
-        <FooterComp />
+        <SessionWrapper>
+          <HeaderComp />
+          <div className="pt-16">{children}</div>
+          <FooterComp />
+        </SessionWrapper>
       </body>
     </html>
   );
