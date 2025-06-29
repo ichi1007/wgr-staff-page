@@ -24,7 +24,7 @@ export default function FooterComp() {
             </Link>
             <div className="w-[1px] h-[50px] bg-black mx-2" />
             <h1
-              className="font-extrabold text-xl mb-2 select-none"
+              className="font-extrabold text-xl mb-2 select-none text-black"
               draggable={false}
             >
               Staff Page
@@ -43,16 +43,16 @@ export default function FooterComp() {
             <Twitter className="text-black" />
             </Link>
           </div>
-          <Link href="/document/about" className="text-black hover:underline">
+          <Link href="/about" className="text-black hover:underline">
             About
           </Link>
           <Link
-            href="/document/privacy-policy"
+            href="/privacy-policy"
             className="text-black hover:underline"
           >
             Privacy Policy
           </Link>
-          <Link href="/document/support" className="text-black hover:underline">
+          <Link href="/support" className="text-black hover:underline">
             Support
           </Link>
         </div>
