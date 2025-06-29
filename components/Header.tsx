@@ -22,7 +22,7 @@ export default function HeaderComp() {
   const user = session?.user;
 
   return (
-    <header className="w-full py-3 px-5 z-10 flex justify-between items-center shadow-md">
+    <header className="w-full py-3 px-5 z-10 flex justify-between items-center bg-white shadow-md">
       {/* ロゴ */}
       <div className="flex items-end">
         <Link href="/">
@@ -36,7 +36,7 @@ export default function HeaderComp() {
         </Link>
         <div className="w-[1px] h-[50px] bg-black mx-2" />
         <h1
-          className="font-extrabold text-xl mb-2 select-none"
+          className="font-extrabold text-xl mb-2 select-none text-black"
           draggable={false}
         >
           Staff Page
