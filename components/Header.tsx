@@ -30,7 +30,7 @@ export default function HeaderComp() {
             src={Logo}
             alt="WGR_Logo"
             width={50}
-            className="block pointer-events-none"
+            className="block pointer-events-none select-none"
             draggable={false}
           />
         </Link>

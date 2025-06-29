@@ -18,7 +18,7 @@ export default function FooterComp() {
                 src={Logo}
                 alt="WGR_Logo"
                 width={50}
-                className="block pointer-events-none"
+                className="block pointer-events-none select-none"
                 draggable={false}
               />
             </Link>
@@ -40,16 +40,13 @@ export default function FooterComp() {
               rel="noopener noreferrer"
               className="text-black hover:underline"
             >
-            <Twitter className="text-black" />
+              <Twitter className="text-black" />
             </Link>
           </div>
           <Link href="/about" className="text-black hover:underline">
             About
           </Link>
-          <Link
-            href="/privacy-policy"
-            className="text-black hover:underline"
-          >
+          <Link href="/privacy-policy" className="text-black hover:underline">
             Privacy Policy
           </Link>
           <Link href="/support" className="text-black hover:underline">
