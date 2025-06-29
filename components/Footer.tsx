@@ -1,42 +1,62 @@
 "use client";
 
+import { Twitter } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import Logo from "@/public/img/wgr_logo.png";
+
 
 export default function FooterComp() {
   return (
-    <footer className="max-w-[550px] mx-auto flex items-center justify-between mt-5 mb-2">
-      <p>
-        © {new Date().getFullYear()} White Grim Reaper.
-        <span className="ml-3">
-          Create:
-          <Link
-            href="https://x.com/ichi_107"
-            className="ml-1 underline"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            ichi
-          </Link>
-        </span>
-      </p>
-      <ul className="flex items-center">
-        {(
-          [
-            { label: "About", href: "/document/about" },
-            { label: "Privacy", href: "/document/privacy" },
-            { label: "Support", href: "/document/support" },
-          ] as const
-        ).map((item, idx, arr) => (
-          <li key={item.label} className="px-1 flex items-center">
-            <Link href={item.href} className="hover:underline">
-              {item.label}
+    <footer className="bg-[#cdf2ff] py-10 mt-0">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-8">
+        {/* 左側ロゴ */}
+        <div className="mb-6 md:mb-0">
+          <div className="flex items-end">
+            <Link href="/">
+              <Image
+                src={Logo}
+                alt="WGR_Logo"
+                width={50}
+                className="block pointer-events-none"
+                draggable={false}
+              />
             </Link>
-            {idx < arr.length - 1 && (
-              <span className="mx-2 font-extrabold">/</span>
-            )}
-          </li>
-        ))}
-      </ul>
+            <div className="w-[1px] h-[50px] bg-black mx-2" />
+            <h1
+              className="font-extrabold text-xl mb-2 select-none"
+              draggable={false}
+            >
+              Staff Page
+            </h1>
+          </div>
+        </div>
+        {/* 右側リンク群 */}
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          <div className="flex items-center gap-2">
+            <Link
+              href="https://x.com/ichi_107"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-black hover:underline"
+            >
+            <Twitter className="text-black" />
+            </Link>
+          </div>
+          <Link href="/document/about" className="text-black hover:underline">
+            About
+          </Link>
+          <Link
+            href="/document/privacy-policy"
+            className="text-black hover:underline"
+          >
+            Privacy Policy
+          </Link>
+          <Link href="/document/support" className="text-black hover:underline">
+            Support
+          </Link>
+        </div>
+      </div>
     </footer>
   );
 }
