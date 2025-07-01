@@ -54,9 +54,14 @@ export default function OverlayComp() {
         <p className="text-sm text-gray-500">必ずパソコンで見てください</p>
       </div>
       {/* プレビュー */}
-      <div className="aspect-video w-[80vw] max-h-[80vh] border-2 border-dotted border-gray-500 mx-auto relative overflow-auto">
+      <div className="aspect-video w-[70vw] max-h-[82vh] border-2 border-dotted border-gray-500 mx-auto relative overflow-auto">
         <div className="absolute inset-0 w-full h-full -z-50">
-          <Image src={BgImage} alt="BgImage" fill className="object-cover" />
+          <Image
+            src={BgImage}
+            alt="BgImage"
+            fill
+            className="object-cover aspect-video object-center"
+          />
         </div>
         {/* 画面上部スコアバー */}
         {displaySettings.scoreBar && (
