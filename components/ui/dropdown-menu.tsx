@@ -34,11 +34,9 @@ function DropdownMenuTrigger({
 function DropdownMenuContent({
   className,
   sideOffset = 4,
-  container,
   style,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Content> & {
-  container?: HTMLElement;
   style?: React.CSSProperties;
 }) {
   return (

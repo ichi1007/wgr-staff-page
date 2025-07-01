@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import clsx from "clsx";
+import Image from "next/image";
 
 const legends = [
   { name: "Ash", ref: "ash" },
@@ -46,16 +47,12 @@ type Team = { id: number; name?: string; spawnPoint?: number };
 export default function LiveControlPageComp() {
   // 状態管理
   const [wsToken, setWsToken] = useState("");
-  const [adminToken, setAdminToken] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const [log, setLog] = useState<{ msg: string; type: string }[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [previousTeams, setPreviousTeams] = useState<
     Record<number, { name: string | null; spawnPoint: number | null }>
   >({});
-  const [teamId, setTeamId] = useState("2");
-  const [teamName, setTeamName] = useState("");
-  const [spawnPoint, setSpawnPoint] = useState("");
   const [bannedLegends, setBannedLegends] = useState<string[]>([]);
   const [legendModalOpen, setLegendModalOpen] = useState(false);
 
@@ -96,8 +93,15 @@ export default function LiveControlPageComp() {
       try {
         const data = JSON.parse(event.data);
         handleMessage(data);
-      } catch (e: any) {
-        addLog(`JSONパースエラー: ${e.message}`, "error");
+      } catch (e: unknown) {
+        addLog(
+          `JSONパースエラー: ${
+            e && typeof e === "object" && "message" in e
+              ? (e as { message?: string }).message
+              : String(e)
+          }`,
+          "error"
+        );
       }
     };
     ws.onclose = () => {
@@ -120,15 +124,27 @@ export default function LiveControlPageComp() {
   };
 
   // メッセージ処理
-  const handleMessage = (data: any) => {
-    if (data.teams) {
-      checkTeamChanges(data.teams);
-      setTeams(data.teams);
+  const handleMessage = (data: unknown) => {
+    if (
+      typeof data === "object" &&
+      data !== null &&
+      "teams" in data &&
+      Array.isArray((data as Record<string, unknown>).teams)
+    ) {
+      checkTeamChanges((data as Record<string, unknown>).teams as Team[]);
+      setTeams((data as Record<string, unknown>).teams as Team[]);
     }
-    if (data.hasOwnProperty("legends")) {
+    if (
+      typeof data === "object" &&
+      data !== null &&
+      "legends" in data &&
+      Array.isArray((data as Record<string, unknown>).legends)
+    ) {
       const bans: string[] = [];
-      data.legends.forEach((l: any) => {
-        if (l.banned) bans.push(l.reference);
+      ((data as Record<string, unknown>).legends as unknown[]).forEach((l: unknown) => {
+        if (l && typeof l === "object" && "banned" in l && "reference" in l) {
+          if ((l as Record<string, unknown>).banned) bans.push((l as Record<string, unknown>).reference as string);
+        }
       });
       setBannedLegends(bans);
       addLog(`レジェンドバン状態を更新: ${bans.length}体がバン中`, "received");
@@ -252,7 +268,6 @@ export default function LiveControlPageComp() {
   useEffect(() => {
     setIsConnected(false);
     addLog("ページが読み込まれました");
-    // eslint-disable-next-line
   }, []);
 
   // ログ色
@@ -431,9 +446,11 @@ export default function LiveControlPageComp() {
                         )}
                         onClick={() => toggleLegendBan(legend)}
                       >
-                        <img
+                        <Image
                           src={getLegendImageUrl(legend.name)}
                           alt={legend.name}
+                          width={48}
+                          height={48}
                           className={clsx(
                             "mx-auto rounded-full object-cover object-top",
                             isBanned && "grayscale"
