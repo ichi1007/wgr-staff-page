@@ -5,7 +5,6 @@ export const metadata = {
   description: "このページで、作成済みカスタムを一覧できます。",
 };
 
-
 export default function LiveControlPage() {
   return (
     <div>
