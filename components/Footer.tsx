@@ -55,7 +55,7 @@ export default function FooterComp() {
       </div>
       <p className="text-center">
         &copy; {new Date().getFullYear()} White Grim Reaper.
-        <span className="ml-3">dev：ichi</span>
+        <span className="ml-3">Dev: ichi</span>
       </p>
     </footer>
   );
