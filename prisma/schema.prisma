@@ -8,15 +8,47 @@ generator client {
 }
 
 model User {
-  id       Int      @id @default(autoincrement())
-  name     String
-  email    String   @unique
-  discord  Discord?
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  createdAt DateTime @default(now())
+  teamId    Int?
+  team      Team?    @relation(fields: [teamId], references: [teamId])
+  verifyId  Int?     @unique
+  verify    Verify?  @relation(fields: [verifyId], references: [id])
+  status    Boolean @default(false)
+  discord   Discord?
 }
 
 model Discord {
-  id       Int    @id @default(autoincrement())
-  userId   Int    @unique
-  avatar   String?
-  user     User   @relation(fields: [userId], references: [id])
+  id        Int    @id @default(autoincrement())
+  userId    Int    @unique
+  avatar    String?
+  user      User   @relation(fields: [userId], references: [id])
+}
+
+model Team {
+  teamName  String
+  teamId    Int      @id @default(autoincrement())
+  rollId    Int?
+  roll      Roll?    @relation(fields: [rollId], references: [id])
+  users     User[]
+}
+
+model Roll {
+  id        Int     @id @default(autoincrement())
+  read      Boolean @default(false)
+  write     Boolean @default(false)
+  create    Boolean @default(false)
+  delete    Boolean @default(false)
+  admin     Boolean @default(false)
+  teams     Team[]
+}
+
+model Verify {
+  id        Int     @id @default(autoincrement())
+  email     Boolean @default(false)
+  emailCode String
+  teamCode  String
+  user      User?
 }
