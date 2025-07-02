@@ -85,7 +85,7 @@ export default function TopPage() {
                           ライブコントロール
                         </Button>
                       </Link>
-                      <Link href="/stream/overlay">
+                      <Link href="/stream/overlay-settings">
                         <Button className="w-full" variant="outline">
                           <TvMinimalPlay />
                           オーバーレイ

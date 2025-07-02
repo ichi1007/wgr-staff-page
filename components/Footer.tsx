@@ -5,10 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import Logo from "@/public/img/wgr_logo.png";
 
-
 export default function FooterComp() {
   return (
-    <footer className="bg-[#cdf2ff] py-10 mt-0">
+    <footer className="bg-[#cdf2ff] pt-10 pb-1 mt-0">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between px-8">
         {/* 左側ロゴ */}
         <div className="mb-6 md:mb-0">
@@ -35,7 +34,7 @@ export default function FooterComp() {
         <div className="flex flex-col md:flex-row items-center gap-6">
           <div className="flex items-center gap-2">
             <Link
-              href="https://x.com/ichi_107"
+              href="https://x.com/WGR_official"
               target="_blank"
               rel="noopener noreferrer"
               className="text-black hover:underline"
@@ -54,6 +53,10 @@ export default function FooterComp() {
           </Link>
         </div>
       </div>
+      <p className="text-center">
+        &copy; {new Date().getFullYear()} White Grim Reaper.
+        <span className="ml-3">dev：ichi</span>
+      </p>
     </footer>
   );
 }
