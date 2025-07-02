@@ -16,6 +16,7 @@ model User {
   team      Team?    @relation(fields: [teamId], references: [teamId])
   verifyId  Int?     @unique
   verify    Verify?  @relation(fields: [verifyId], references: [id])
+  status    Boolean @default(false)
   discord   Discord?
 }
 
