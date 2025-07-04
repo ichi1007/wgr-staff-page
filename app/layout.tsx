@@ -4,6 +4,8 @@ import "./globals.css";
 import HeaderComp from "@/components/Header";
 import FooterComp from "@/components/Footer";
 import SessionWrapper from "@/components/SessionWrapper";
+import AuthGuard from "../components/auth-guard";
+import Providers from "./providers";
 
 const Noto_sans_jp = Noto_Sans_JP({
   variable: "--font-noto-sans-jp",
@@ -30,11 +32,15 @@ export default function RootLayout({
       <body
         className={`${Noto_sans_jp.variable} ${Noto_sans.variable} antialiased`}
       >
-        <SessionWrapper>
-          <HeaderComp />
-          <div>{children}</div>
-          <FooterComp />
-        </SessionWrapper>
+        <Providers>
+          <AuthGuard>
+            <SessionWrapper>
+              <HeaderComp />
+              <div>{children}</div>
+              <FooterComp />
+            </SessionWrapper>
+          </AuthGuard>
+        </Providers>
       </body>
     </html>
   );

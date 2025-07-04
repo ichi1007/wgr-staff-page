@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +30,15 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface User {
   id: string;
@@ -37,6 +46,8 @@ interface User {
   email: string;
   roles: Role[];
   teams: string[];
+  status?: boolean;
+  avatar?: string;
 }
 
 interface Role {
@@ -60,27 +71,12 @@ const availableTeams = [
   "営業チーム",
 ];
 
-export default function UsersManagementPage() {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: "1",
-      displayName: "田中太郎",
-      email: "tanaka@example.com",
-      roles: [
-        { id: "1", name: "read", label: "読み" },
-        { id: "2", name: "write", label: "書き" },
-      ],
-      teams: ["開発チーム"],
-    },
-    {
-      id: "2",
-      displayName: "佐藤花子",
-      email: "sato@example.com",
-      roles: [{ id: "5", name: "admin", label: "管理者" }],
-      teams: ["開発チーム", "デザインチーム"],
-    },
-  ]);
+const USERS_PER_PAGE = 10; // 1ページあたりのユーザー数
 
+export default function UsersManagementPage() {
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
@@ -88,6 +84,50 @@ export default function UsersManagementPage() {
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [isSyncDialogOpen, setIsSyncDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
+
+  // ページネーション用の計算
+  const paginationData = useMemo(() => {
+    const totalUsers = users.length;
+    const totalPages = Math.ceil(totalUsers / USERS_PER_PAGE);
+    const startIndex = (currentPage - 1) * USERS_PER_PAGE;
+    const endIndex = startIndex + USERS_PER_PAGE;
+    const currentUsers = users.slice(startIndex, endIndex);
+
+    return {
+      totalUsers,
+      totalPages,
+      currentUsers,
+      hasNextPage: currentPage < totalPages,
+      hasPreviousPage: currentPage > 1,
+    };
+  }, [users, currentPage]);
+
+  // データベースからユーザー情報を取得
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/users");
+      if (response.ok) {
+        const userData = await response.json();
+        setUsers(userData);
+        // ユーザー数が変わった場合のページ調整
+        const newTotalPages = Math.ceil(userData.length / USERS_PER_PAGE);
+        if (currentPage > newTotalPages && newTotalPages > 0) {
+          setCurrentPage(newTotalPages);
+        }
+      } else {
+        console.error("Failed to fetch users");
+      }
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   const handleEditUser = (user: User) => {
     setEditingUser({ ...user });
@@ -143,12 +183,39 @@ export default function UsersManagementPage() {
   };
 
   const handleSync = () => {
-    // ここで同期処理を実装
+    fetchUsers();
     setIsSyncDialogOpen(true);
   };
 
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= paginationData.totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
+  const generatePageNumbers = () => {
+    const { totalPages } = paginationData;
+    const pages = [];
+    const maxVisiblePages = 5;
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      const startPage = Math.max(1, currentPage - 2);
+      const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+    }
+
+    return pages;
+  };
+
   return (
-    <div className="p-6">
+    <div className="p-6" style={{ height: "calc(100vh - 75px)" }}>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <UsersRound />
@@ -217,69 +284,193 @@ export default function UsersManagementPage() {
         </div>
       </div>
 
-      <Card>
+      <Card style={{ height: "calc(100vh - 210px)" }}>
         <CardHeader>
-          <CardTitle>ユーザー一覧</CardTitle>
+          <CardTitle className="flex justify-between items-center">
+            <span>ユーザー一覧</span>
+            <span className="text-sm font-normal text-gray-500">
+              {paginationData.totalUsers}人中{" "}
+              {(currentPage - 1) * USERS_PER_PAGE + 1}-
+              {Math.min(
+                currentPage * USERS_PER_PAGE,
+                paginationData.totalUsers
+              )}
+              人目を表示
+            </span>
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>表示名</TableHead>
-                <TableHead>メールアドレス</TableHead>
-                <TableHead>ロール</TableHead>
-                <TableHead>チーム</TableHead>
-                <TableHead>操作</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.displayName}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-1 flex-wrap">
-                      {user.roles.map((role) => (
-                        <Badge key={role.id} variant="secondary">
-                          {role.label}
-                        </Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-1 flex-wrap">
-                      {user.teams.map((team) => (
-                        <Badge key={team} variant="outline">
-                          {team}
-                        </Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEditUser(user)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => confirmDeleteUser(user)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          {loading ? (
+            <div className="flex justify-center items-center py-8">
+              <RefreshCw className="h-6 w-6 animate-spin" />
+              <span className="ml-2">読み込み中...</span>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>表示名</TableHead>
+                  <TableHead>メールアドレス</TableHead>
+                  <TableHead>ステータス</TableHead>
+                  <TableHead>ロール</TableHead>
+                  <TableHead>チーム</TableHead>
+                  <TableHead>操作</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {paginationData.currentUsers.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8">
+                      {users.length === 0
+                        ? "ユーザーが見つかりません"
+                        : "このページにはユーザーがいません"}
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  paginationData.currentUsers.map((user) => (
+                    <TableRow key={user.id}>
+                      <TableCell className="flex items-center gap-2">
+                        {user.avatar && (
+                          <img
+                            src={user.avatar}
+                            alt={user.displayName}
+                            className="w-6 h-6 rounded-full"
+                          />
+                        )}
+                        {user.displayName}
+                      </TableCell>
+                      <TableCell>{user.email}</TableCell>
+                      <TableCell>
+                        <Badge variant={user.status ? "default" : "secondary"}>
+                          {user.status ? "有効" : "無効"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1 flex-wrap">
+                          {user.roles.length > 0 ? (
+                            user.roles.map((role) => (
+                              <Badge key={role.id} variant="secondary">
+                                {role.label}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-gray-500">なし</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1 flex-wrap">
+                          {user.teams.length > 0 ? (
+                            user.teams.map((team) => (
+                              <Badge key={team} variant="outline">
+                                {team}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span className="text-gray-500">未所属</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEditUser(user)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => confirmDeleteUser(user)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
+
+      {paginationData.totalPages > 1 && (
+        <Pagination className="mt-4">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => goToPage(currentPage - 1)}
+                className={
+                  !paginationData.hasPreviousPage
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
+              />
+            </PaginationItem>
+
+            {currentPage > 3 && paginationData.totalPages > 5 && (
+              <>
+                <PaginationItem>
+                  <PaginationLink
+                    onClick={() => goToPage(1)}
+                    className="cursor-pointer"
+                  >
+                    1
+                  </PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              </>
+            )}
+
+            {generatePageNumbers().map((page) => (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  onClick={() => goToPage(page)}
+                  isActive={page === currentPage}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
+
+            {currentPage < paginationData.totalPages - 2 &&
+              paginationData.totalPages > 5 && (
+                <>
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                  <PaginationItem>
+                    <PaginationLink
+                      onClick={() => goToPage(paginationData.totalPages)}
+                      className="cursor-pointer"
+                    >
+                      {paginationData.totalPages}
+                    </PaginationLink>
+                  </PaginationItem>
+                </>
+              )}
+
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => goToPage(currentPage + 1)}
+                className={
+                  !paginationData.hasNextPage
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent className="max-w-md">
