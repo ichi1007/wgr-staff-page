@@ -122,12 +122,14 @@ export default function TopPage() {
                           オーバーレイ
                         </Button>
                       </Link>
-                      <Link href="/admin/users-management">
-                        <Button className="w-full" variant="outline">
-                          <UsersRound />
-                          ユーザー管理
-                        </Button>
-                      </Link>
+                      {session?.user?.hasAdminRole && (
+                        <Link href="/admin/users-management">
+                          <Button className="w-full" variant="outline">
+                            <UsersRound />
+                            ユーザー管理
+                          </Button>
+                        </Link>
+                      )}
                     </div>
                   </DialogHeader>
                   <DialogFooter>

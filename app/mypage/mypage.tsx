@@ -37,7 +37,7 @@ interface UserData {
   displayName: string;
   email: string;
   roles: Array<{ id: string; name: string; label: string }>;
-  teams: string[];
+  teams: Array<string | { id: string; name: string }>;
   status: boolean;
   avatar?: string;
   discordName?: string;
@@ -201,6 +201,15 @@ export default function MyPageComp() {
     return adminRole ? "管理者" : "一般ユーザー";
   };
 
+  const getAvatarUrl = (
+    avatar: string | undefined,
+    userId: string
+  ): string | undefined => {
+    if (!avatar) return undefined;
+    if (avatar.startsWith("http")) return avatar;
+    return `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png?size=128`;
+  };
+
   return (
     <div className="min-h-screen bg-background pt-20 pb-8">
       <div className="max-w-3xl mx-auto">
@@ -245,7 +254,10 @@ export default function MyPageComp() {
                     <Avatar className="w-32 h-32 border-4 border-white shadow-lg">
                       <AvatarImage
                         key={`avatar-${profileData.avatar}`}
-                        src={profileData.avatar || "/placeholder-avatar.jpg"}
+                        src={
+                          getAvatarUrl(profileData.avatar, profileData.id) ||
+                          "/placeholder-avatar.jpg"
+                        }
                       />
                       <AvatarFallback className="text-2xl bg-gray-200">
                         <p className="text-sm">アバター画像</p>
@@ -295,7 +307,7 @@ export default function MyPageComp() {
                       @{profileData.id}
                     </p>
                     <Tooltip>
-                      <TooltipTrigger className="cursor-pointer">
+                      <TooltipTrigger asChild className="cursor-pointer">
                         <Button
                           variant="ghost"
                           size="sm"
@@ -310,9 +322,7 @@ export default function MyPageComp() {
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>
-                          コピーボタン
-                        </p>
+                        <p>コピーボタン</p>
                       </TooltipContent>
                     </Tooltip>
                   </div>
@@ -417,11 +427,19 @@ export default function MyPageComp() {
                       所属チーム
                     </Label>
                     <div
-                      key={`team-${profileData.teams.join(",")}`}
+                      key={`team-${
+                        profileData.teams.length > 0
+                          ? typeof profileData.teams[0] === "string"
+                            ? profileData.teams[0]
+                            : profileData.teams[0]?.name || "unknown"
+                          : "none"
+                      }`}
                       className="text-base font-medium"
                     >
                       {profileData.teams.length > 0
-                        ? profileData.teams[0]
+                        ? typeof profileData.teams[0] === "string"
+                          ? profileData.teams[0]
+                          : profileData.teams[0]?.name || "不明"
                         : "未所属"}
                     </div>
                   </div>

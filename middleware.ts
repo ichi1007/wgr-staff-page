@@ -8,6 +8,16 @@ export default withAuth(
       return NextResponse.redirect(new URL("/", req.url));
     }
 
+    // /admin/users-managementへのアクセス時はadminロールをチェック
+    if (req.nextUrl.pathname === "/admin/users-management") {
+      const token = req.nextauth.token;
+
+      // adminロールがない場合はホームページにリダイレクト
+      if (!token?.hasAdminRole) {
+        return NextResponse.redirect(new URL("/", req.url));
+      }
+    }
+
     return NextResponse.next();
   },
   {

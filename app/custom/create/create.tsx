@@ -118,6 +118,7 @@ export default function CreateCustomPage() {
                     <SelectItem value="algs">ALGS</SelectItem>
                     <SelectItem value="poland">Poland Rule</SelectItem>
                     <SelectItem value="tdm">Team Death Match</SelectItem>
+                    <SelectItem value="Tournament">Tournament Rule</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

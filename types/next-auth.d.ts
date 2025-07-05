@@ -8,6 +8,16 @@ declare module "next-auth" {
       email?: string | null;
       image?: string | null;
       discordUserId?: string;
+      hasAdminRole?: boolean;
+      roles?: Array<{
+        id: number;
+        name: string;
+        label: string;
+      }>;
+      teams?: Array<{
+        id: number;
+        name: string;
+      }>;
     };
   }
 
@@ -20,5 +30,15 @@ declare module "next-auth" {
 declare module "next-auth/jwt" {
   interface JWT {
     discordUserId?: string;
+    hasAdminRole?: boolean;
+    roles?: Array<{
+      id: number;
+      name: string;
+      label: string;
+    }>;
+    teams?: Array<{
+      id: number;
+      name: string;
+    }>;
   }
 }

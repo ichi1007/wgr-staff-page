@@ -8,41 +8,46 @@ export async function GET() {
     const users = await prisma.user.findMany({
       include: {
         discord: true,
-        team: {
+        userRoles: {
           include: {
-            roll: true,
+            role: true,
+          },
+        },
+        userTeams: {
+          include: {
+            team: true,
           },
         },
       },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
-    const formattedUsers = users.map((user) => {
-      const roles = [];
-      if (user.team?.roll) {
-        const { roll } = user.team;
-        if (roll.read) roles.push({ id: "1", name: "read", label: "読み" });
-        if (roll.write) roles.push({ id: "2", name: "write", label: "書き" });
-        if (roll.create) roles.push({ id: "3", name: "create", label: "作成" });
-        if (roll.delete) roles.push({ id: "4", name: "delete", label: "削除" });
-        if (roll.admin) roles.push({ id: "5", name: "admin", label: "管理者" });
-      }
+    // レスポンス用にデータを整形
+    const response = users.map((user) => ({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      status: user.status,
+      avatar: user.discord?.avatar,
+      roles: user.userRoles.map((ur) => ({
+        id: ur.role.id,
+        name: ur.role.name,
+        label: ur.role.label,
+      })),
+      teams: user.userTeams.map((ut) => ({
+        id: ut.team.id,
+        name: ut.team.name,
+      })),
+      createdAt: user.createdAt,
+    }));
 
-      return {
-        id: user.id,
-        displayName: user.name,
-        email: user.email,
-        roles,
-        teams: user.team ? [user.team.teamName] : [],
-        status: user.status,
-        avatar: user.discord?.avatar,
-      };
-    });
-
-    return NextResponse.json(formattedUsers);
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching users:", error);
     return NextResponse.json(
-      { error: "Failed to fetch users" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

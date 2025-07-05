@@ -43,7 +43,8 @@ const authOptions = {
         } else {
           // 既存のユーザーの場合はavatarのみ更新
           if (existingUser.discord) {
-            const newAvatar = profile.avatar || user.image?.split("/").pop()?.split(".")[0];
+            const newAvatar =
+              profile.avatar || user.image?.split("/").pop()?.split(".")[0];
 
             // avatarが変更された場合のみ更新
             if (existingUser.discord.avatar !== newAvatar) {
@@ -75,7 +76,7 @@ const authOptions = {
       }
     },
     async session({ session, token }: any) {
-      if (token.discordUserId) {
+      if (token?.discordUserId) {
         // データベースでユーザーの存在を確認
         try {
           const dbUser = await prisma.user.findUnique({
@@ -90,6 +91,11 @@ const authOptions = {
 
           session.user.discordUserId = token.discordUserId;
           session.user.id = token.discordUserId;
+
+          // ロールとチーム情報をセッションに追加（nullチェック）
+          session.user.hasAdminRole = token.hasAdminRole || false;
+          session.user.roles = token.roles || [];
+          session.user.teams = token.teams || [];
         } catch (error) {
           console.error("Error checking user in database:", error);
           return null;
@@ -102,20 +108,44 @@ const authOptions = {
         token.discordUserId = user.id;
       }
 
-      // JWTトークンが既に存在する場合、データベースでユーザーを確認
-      if (token.discordUserId) {
+      // JWTトークンが既に存在する場合、データベースでユーザーとロール情報を確認
+      if (token?.discordUserId) {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.discordUserId },
+            include: {
+              userRoles: {
+                include: {
+                  role: true,
+                },
+              },
+              userTeams: {
+                include: {
+                  team: true,
+                },
+              },
+            },
           });
 
           if (!dbUser) {
             // ユーザーが存在しない場合はトークンを無効化
+            console.warn(`User not found: ${token.discordUserId}`);
             return null;
           }
+
+          // ロール情報をトークンに追加
+          const roles = dbUser.userRoles?.map((ur) => ur.role) || [];
+          const teams = dbUser.userTeams?.map((ut) => ut.team) || [];
+
+          token.hasAdminRole = roles.some((role) => role.name === "admin");
+          token.roles = roles;
+          token.teams = teams;
         } catch (error) {
           console.error("Error checking user in JWT callback:", error);
-          return null;
+          // エラーが発生した場合はデフォルト値を設定
+          token.hasAdminRole = false;
+          token.roles = [];
+          token.teams = [];
         }
       }
 

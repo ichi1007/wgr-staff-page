@@ -8,16 +8,16 @@ generator client {
 }
 
 model User {
-  id        String   @id
+  id        String      @id
   name      String
-  email     String   @unique
-  createdAt DateTime @default(now())
-  teamId    Int?
-  team      Team?    @relation(fields: [teamId], references: [teamId])
-  verifyId  Int?     @unique
-  verify    Verify?  @relation(fields: [verifyId], references: [id])
-  status    Boolean @default(false)
+  email     String      @unique
+  createdAt DateTime    @default(now())
+  status    Boolean     @default(false)
+  verifyId  Int?        @unique
+  verify    Verify?     @relation(fields: [verifyId], references: [id])
   discord   Discord?
+  userRoles UserRole[]
+  userTeams UserTeam[]
 }
 
 model Discord {
@@ -29,21 +29,36 @@ model Discord {
 }
 
 model Team {
-  teamName  String
-  teamId    Int      @id @default(autoincrement())
-  rollId    Int?
-  roll      Roll?    @relation(fields: [rollId], references: [id])
-  users     User[]
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  createdAt DateTime   @default(now())
+  userTeams UserTeam[]
 }
 
-model Roll {
-  id        Int     @id @default(autoincrement())
-  read      Boolean @default(false)
-  write     Boolean @default(false)
-  create    Boolean @default(false)
-  delete    Boolean @default(false)
-  admin     Boolean @default(false)
-  teams     Team[]
+model Role {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  label     String
+  createdAt DateTime   @default(now())
+  userRoles UserRole[]
+}
+
+model UserRole {
+  userId String
+  roleId Int
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+}
+
+model UserTeam {
+  userId String
+  teamId Int
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@id([userId, teamId])
 }
 
 model Verify {

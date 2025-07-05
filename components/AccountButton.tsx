@@ -48,7 +48,36 @@ export default function AccountButton() {
     }
   }, [session]);
 
+  // URLの有効性をチェックする関数
+  const isValidUrl = (url: string | undefined): boolean => {
+    if (!url) return false;
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  // Discord CDNのアバターURLを構築する関数
+  const getDiscordAvatarUrl = (
+    avatar: string | undefined,
+    userId: string
+  ): string | null => {
+    if (!avatar) return null;
+
+    // 既に完全なURLの場合はそのまま使用
+    if (avatar.startsWith("http")) {
+      return avatar;
+    }
+
+    // Discord CDNのURL形式で構築
+    return `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png?size=128`;
+  };
+
   if (!session?.user || !userData) return null;
+
+  const avatarUrl = getDiscordAvatarUrl(userData.avatar, userData.id);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -67,13 +96,18 @@ export default function AccountButton() {
             transition={{ duration: 0.3, ease: "easeOut" }}
           >
             <Avatar className="cursor-pointer w-10 h-10 flex-shrink-0">
-              {userData.avatar ? (
+              {avatarUrl ? (
                 <Image
-                  src={userData.avatar}
+                  src={avatarUrl}
                   alt={userData.displayName ?? "avatar"}
                   width={38}
                   height={38}
                   className="rounded-full object-cover w-full h-full"
+                  onError={(e) => {
+                    // 画像読み込みエラー時にfallbackを表示
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = "none";
+                  }}
                 />
               ) : (
                 <AvatarFallback className="bg-gray-200 text-gray-700 font-medium">
@@ -112,13 +146,17 @@ export default function AccountButton() {
               <div className="px-4 py-4 border-b bg-gray-50/50">
                 <div className="flex items-center gap-3">
                   <Avatar className="w-9 h-9 border">
-                    {userData.avatar ? (
+                    {avatarUrl ? (
                       <Image
-                        src={userData.avatar}
+                        src={avatarUrl}
                         alt={userData.displayName ?? "avatar"}
                         width={36}
                         height={36}
                         className="rounded-full object-cover w-full h-full"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = "none";
+                        }}
                       />
                     ) : (
                       <AvatarFallback className="bg-gray-200 text-gray-700 font-medium">

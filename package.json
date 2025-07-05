@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:top-admin:setup": "node scripts/setup-top-admin.js"
+    "db:setup:roles": "node scripts/setup-roll.js",
+    "db:assign:admin": "node scripts/assign-admin.js"
   },
   "dependencies": {
     "@prisma/client": "^6.10.1",
