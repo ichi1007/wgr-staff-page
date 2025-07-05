@@ -27,9 +27,9 @@ export default function TopPage() {
   const { data: session } = useSession();
 
   return (
-    <div className="relative w-full min-h-[calc(100vh-theme(spacing.16))]">
+    <div className="relative w-full min-h-screen">
       {/* 背景動画 */}
-      <div className="w-full min-h-[calc(100vh-theme(spacing.16))] z-[-999] pointer-events-none absolute">
+      <div className="w-full min-h-screen z-[-999] pointer-events-none absolute">
         <Image
           src={WGR_IMG}
           alt="WGR OGP Image"

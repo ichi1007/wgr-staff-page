@@ -1,13 +1,42 @@
 import { withAuth } from "next-auth/middleware";
+import { NextResponse } from "next/server";
 
-export default withAuth;
+export default withAuth(
+  function middleware(req) {
+    // セッションが無効または存在しない場合はホームページにリダイレクト
+    if (!req.nextauth.token) {
+      return NextResponse.redirect(new URL("/", req.url));
+    }
+
+    return NextResponse.next();
+  },
+  {
+    callbacks: {
+      authorized: ({ token }) => {
+        // トークンが存在し、discordUserIdが設定されている場合のみ認証
+        return !!token?.discordUserId;
+      },
+    },
+    pages: {
+      // ログインページを無効化（NextAuth.jsのデフォルトログインページも無効）
+      signIn: "/",
+    },
+  }
+);
 
 export const config = {
   matcher: [
     /*
-      ルート（/）、/public 配下、/auth 配下、/_error、/_not-found などを除外
-      それ以外を全て保護
+      認証が必要ないパブリックページのパス
+      - ホームページ ("/")
+      - aboutページ ("/about")
+      - プライバシーポリシーページ ("/privacy-policy")
+      - サポートページ ("/support")
+      - API認証エンドポイント ("/api/auth/")
+      - その他のパブリックAPIエンドポイント ("/public/")
+      - _errorページ ("/_error")
+      - _not-foundページ ("/_not-found")
     */
-    "/((?!$|public/|auth/|_error|_not-found).*)",
+    "/((?!$|public/|auth/|_error|_not-found|api/auth/|about$|about/|privacy-policy$|privacy-policy/|support$|support/).*)",
   ],
 };

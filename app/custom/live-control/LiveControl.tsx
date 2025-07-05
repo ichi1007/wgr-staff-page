@@ -285,8 +285,8 @@ export default function LiveControlPageComp() {
       : "text-white";
 
   return (
-    <div className="max-w-3xl mx-auto p-4 space-y-6 text-white">
-      <h1 className="text-2xl font-bold mb-2">WebSocket チーム名変更テスト</h1>
+    <div className="pt-20 max-w-3xl mx-auto p-4 space-y-6 text-white">
+      <h1 className="text-2xl font-bold mb-2 text-black">WebSocket チーム名変更テスト</h1>
 
       {/* 接続状況 */}
       <section className="bg-zinc-800 rounded-lg p-4 space-y-2">

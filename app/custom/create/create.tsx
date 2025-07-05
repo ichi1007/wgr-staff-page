@@ -68,7 +68,7 @@ export default function CreateCustomPage() {
   };
 
   return (
-    <div className="my-13">
+    <div className="mb-13 pt-20">
       <div className="w-full max-w-3xl mx-auto mb-3">
         <h2 className="text-center font-extrabold text-xl flex items-center justify-center gap-2">
           <PencilLine />
