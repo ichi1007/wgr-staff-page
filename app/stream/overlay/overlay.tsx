@@ -378,7 +378,7 @@ export default function OverlayComp() {
                     className="object-cover"
                   />
                 ) : (
-                  <Skeleton className="w-full h-full" />
+                  <Skeleton className="w-full h-full bg-gray-300" />
                 )}
                 {backgroundImage && (
                   <div className="absolute inset-0 flex items-center justify-center  bg-opacity-50">
@@ -402,7 +402,7 @@ export default function OverlayComp() {
                     className="object-cover"
                   />
                 ) : (
-                  <Skeleton className="w-full h-full" />
+                  <Skeleton className="w-full h-full bg-gray-300" />
                 )}
                 {backgroundImage && (
                   <div className="absolute inset-0 flex items-center justify-center  bg-opacity-50">
@@ -426,7 +426,7 @@ export default function OverlayComp() {
                     className="object-cover"
                   />
                 ) : (
-                  <Skeleton className="w-full h-full" />
+                  <Skeleton className="w-full h-full bg-gray-300" />
                 )}
                 {backgroundImage && (
                   <div className="absolute inset-0 flex items-center justify-center  bg-opacity-50">
@@ -450,7 +450,7 @@ export default function OverlayComp() {
                     className="object-cover"
                   />
                 ) : (
-                  <Skeleton className="w-full h-full" />
+                  <Skeleton className="w-full h-full bg-gray-300" />
                 )}
                 {backgroundImage && (
                   <div className="absolute inset-0 flex items-center justify-center  bg-opacity-50">
