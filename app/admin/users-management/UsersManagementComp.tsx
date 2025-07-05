@@ -215,7 +215,7 @@ export default function UsersManagementPage() {
   };
 
   return (
-    <div className="p-6" style={{ height: "calc(100vh - 75px)" }}>
+    <div className="pt-20 p-6 h-screen">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold flex items-center gap-2">
           <UsersRound />
@@ -284,7 +284,7 @@ export default function UsersManagementPage() {
         </div>
       </div>
 
-      <Card style={{ height: "calc(100vh - 210px)" }}>
+      <Card className="h-[80vh]">
         <CardHeader>
           <CardTitle className="flex justify-between items-center">
             <span>ユーザー一覧</span>
