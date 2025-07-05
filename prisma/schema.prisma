@@ -22,8 +22,9 @@ model User {
 
 model Discord {
   discordUserId String @id
-  userId        String @unique
+  discordName   String
   avatar        String?
+  userId        String @unique
   user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 

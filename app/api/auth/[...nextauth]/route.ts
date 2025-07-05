@@ -15,7 +15,7 @@ const authOptions = {
   callbacks: {
     async signIn({ user, profile }: any) {
       try {
-        // ユーザーを検索または作成（Discord IDをUser IDとして使用）
+        // ユーザーを検索（Discord IDをUser IDとして使用）
         let existingUser = await prisma.user.findUnique({
           where: { id: user.id },
           include: { discord: true },
@@ -31,35 +31,38 @@ const authOptions = {
               discord: {
                 create: {
                   discordUserId: user.id,
-                  avatar: user.image,
+                  discordName: user.name || profile.username,
+                  avatar:
+                    profile.avatar ||
+                    user.image?.split("/").pop()?.split(".")[0],
                 },
               },
             },
             include: { discord: true },
           });
         } else {
-          // 既存のユーザー情報を更新
-          await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              name: user.name || profile.username,
-              email: user.email,
-            },
-          });
-
-          // Discordアバターを更新
+          // 既存のユーザーの場合はavatarのみ更新
           if (existingUser.discord) {
-            await prisma.discord.update({
-              where: { discordUserId: user.id },
-              data: { avatar: user.image },
-            });
+            const newAvatar = profile.avatar || user.image?.split("/").pop()?.split(".")[0];
+
+            // avatarが変更された場合のみ更新
+            if (existingUser.discord.avatar !== newAvatar) {
+              await prisma.discord.update({
+                where: { discordUserId: user.id },
+                data: {
+                  avatar: newAvatar,
+                },
+              });
+            }
           } else {
             // Discordレコードが存在しない場合は作成
             await prisma.discord.create({
               data: {
                 discordUserId: user.id,
                 userId: user.id,
-                avatar: user.image,
+                discordName: user.name || profile.username,
+                avatar:
+                  profile.avatar || user.image?.split("/").pop()?.split(".")[0],
               },
             });
           }
