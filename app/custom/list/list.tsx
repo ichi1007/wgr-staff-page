@@ -36,9 +36,11 @@ export default function CustomListPage() {
               <RotateCw />
               更新
             </Button>
-            <Button>
-              <CirclePlus />
-              新規カスタムを作成
+            <Button asChild>
+              <Link href="/custom/create">
+                <CirclePlus />
+                新規カスタムを作成
+              </Link>
             </Button>
           </CardAction>
         </CardHeader>

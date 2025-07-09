@@ -4,6 +4,7 @@ import Image from "next/image";
 import WGR_IMG from "@/public/img/wgr-ogp.png";
 import DiscordButton from "@/components/DiscordButton";
 import { useSession } from "next-auth/react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTrigger,
@@ -23,8 +24,38 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+interface UserData {
+  id: string;
+  displayName: string;
+  email: string;
+  avatar?: string;
+}
+
 export default function TopPage() {
   const { data: session } = useSession();
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (session?.user?.discordUserId) {
+        try {
+          const response = await fetch(
+            `/api/user/${session.user.discordUserId}`
+          );
+          if (response.ok) {
+            const data = await response.json();
+            setUserData(data);
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+      }
+    };
+
+    if (session?.user?.discordUserId) {
+      fetchUserData();
+    }
+  }, [session]);
 
   return (
     <div className="relative w-full min-h-screen">
@@ -45,7 +76,7 @@ export default function TopPage() {
           <h1 className="text-center text-black text-2xl">
             ようこそ
             <span className="font-extrabold px-1">
-              {session?.user?.name ?? "ゲスト"}
+              {userData?.displayName ?? session?.user?.name ?? "ゲスト"}
             </span>
             さん
           </h1>
@@ -91,12 +122,14 @@ export default function TopPage() {
                           オーバーレイ
                         </Button>
                       </Link>
-                      <Link href="/admin/users-management">
-                        <Button className="w-full" variant="outline">
-                          <UsersRound />
-                          ユーザー管理
-                        </Button>
-                      </Link>
+                      {session?.user?.hasAdminRole && (
+                        <Link href="/admin/users-management">
+                          <Button className="w-full" variant="outline">
+                            <UsersRound />
+                            ユーザー管理
+                          </Button>
+                        </Link>
+                      )}
                     </div>
                   </DialogHeader>
                   <DialogFooter>

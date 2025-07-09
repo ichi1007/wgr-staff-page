@@ -42,46 +42,38 @@ import {
 
 interface User {
   id: string;
-  displayName: string;
+  name: string;
   email: string;
   roles: Role[];
-  teams: string[];
+  teams: Team[];
   status?: boolean;
   avatar?: string;
 }
 
 interface Role {
-  id: string;
-  name: "read" | "write" | "create" | "delete" | "admin";
+  id: number;
+  name: string;
   label: string;
 }
 
-const availableRoles: Role[] = [
-  { id: "1", name: "read", label: "読み" },
-  { id: "2", name: "write", label: "書き" },
-  { id: "3", name: "create", label: "作成" },
-  { id: "4", name: "delete", label: "削除" },
-  { id: "5", name: "admin", label: "管理者" },
-];
-
-const availableTeams = [
-  "開発チーム",
-  "デザインチーム",
-  "マーケティングチーム",
-  "営業チーム",
-];
+interface Team {
+  id: number;
+  name: string;
+}
 
 const USERS_PER_PAGE = 10; // 1ページあたりのユーザー数
 
 export default function UsersManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [availableRoles, setAvailableRoles] = useState<Role[]>([]);
+  const [availableTeams, setAvailableTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
-  const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
+  const [selectedTeamIds, setSelectedTeamIds] = useState<number[]>([]);
   const [isSyncDialogOpen, setIsSyncDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
 
@@ -101,6 +93,32 @@ export default function UsersManagementPage() {
       hasPreviousPage: currentPage > 1,
     };
   }, [users, currentPage]);
+
+  // データベースからロール情報を取得
+  const fetchRoles = async () => {
+    try {
+      const response = await fetch("/api/roles");
+      if (response.ok) {
+        const rolesData = await response.json();
+        setAvailableRoles(rolesData);
+      }
+    } catch (error) {
+      console.error("Error fetching roles:", error);
+    }
+  };
+
+  // データベースからチーム情報を取得
+  const fetchTeams = async () => {
+    try {
+      const response = await fetch("/api/teams");
+      if (response.ok) {
+        const teamsData = await response.json();
+        setAvailableTeams(teamsData);
+      }
+    } catch (error) {
+      console.error("Error fetching teams:", error);
+    }
+  };
 
   // データベースからユーザー情報を取得
   const fetchUsers = async () => {
@@ -126,6 +144,8 @@ export default function UsersManagementPage() {
   };
 
   useEffect(() => {
+    fetchRoles();
+    fetchTeams();
     fetchUsers();
   }, []);
 
@@ -134,11 +154,38 @@ export default function UsersManagementPage() {
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveUser = () => {
-    if (editingUser) {
-      setUsers(users.map((u) => (u.id === editingUser.id ? editingUser : u)));
-      setIsEditDialogOpen(false);
-      setEditingUser(null);
+  const handleSaveUser = async () => {
+    if (!editingUser) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/users/${editingUser.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: editingUser.name,
+          email: editingUser.email,
+          roles: editingUser.roles,
+          teams: editingUser.teams,
+        }),
+      });
+
+      if (response.ok) {
+        const updatedUser = await response.json();
+        setUsers(users.map((u) => (u.id === editingUser.id ? updatedUser : u)));
+        setIsEditDialogOpen(false);
+        setEditingUser(null);
+      } else {
+        const errorData = await response.json();
+        alert(`エラー: ${errorData.error || "ユーザーの更新に失敗しました"}`);
+      }
+    } catch (error) {
+      console.error("Error updating user:", error);
+      alert("ユーザーの更新中にエラーが発生しました");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -153,7 +200,7 @@ export default function UsersManagementPage() {
     }
   };
 
-  const handleRoleChange = (roleId: string, checked: boolean) => {
+  const handleRoleChange = (roleId: number, checked: boolean) => {
     if (!editingUser) return;
 
     const role = availableRoles.find((r) => r.id === roleId);
@@ -172,12 +219,33 @@ export default function UsersManagementPage() {
     }
   };
 
+  const handleTeamChange = (teamId: number, checked: boolean) => {
+    if (!editingUser) return;
+
+    const team = availableTeams.find((t) => t.id === teamId);
+    if (!team) return;
+
+    if (checked) {
+      setEditingUser({
+        ...editingUser,
+        teams: [...editingUser.teams, team],
+      });
+    } else {
+      setEditingUser({
+        ...editingUser,
+        teams: editingUser.teams.filter((t) => t.id !== teamId),
+      });
+    }
+  };
+
   const handleInviteUser = () => {
-    if (inviteEmail && selectedTeams.length > 0) {
-      // ここで招待処理を実行
-      alert(`${inviteEmail} を ${selectedTeams.join(", ")} に招待しました`);
+    if (inviteEmail && selectedTeamIds.length > 0) {
+      const selectedTeamNames = availableTeams
+        .filter((team) => selectedTeamIds.includes(team.id))
+        .map((team) => team.name);
+      alert(`${inviteEmail} を ${selectedTeamNames.join(", ")} に招待しました`);
       setInviteEmail("");
-      setSelectedTeams([]);
+      setSelectedTeamIds([]);
       setIsInviteDialogOpen(false);
     }
   };
@@ -212,6 +280,15 @@ export default function UsersManagementPage() {
     }
 
     return pages;
+  };
+
+  const getAvatarUrl = (
+    avatar: string | null,
+    userId: string
+  ): string | undefined => {
+    if (!avatar) return undefined;
+    if (avatar.startsWith("http")) return avatar;
+    return `https://cdn.discordapp.com/avatars/${userId}/${avatar}.png?size=128`;
   };
 
   return (
@@ -255,21 +332,26 @@ export default function UsersManagementPage() {
                   <Label>招待するチーム</Label>
                   <div className="mt-2 space-y-2">
                     {availableTeams.map((team) => (
-                      <div key={team} className="flex items-center space-x-2">
+                      <div
+                        key={team.id}
+                        className="flex items-center space-x-2"
+                      >
                         <Checkbox
-                          id={team}
-                          checked={selectedTeams.includes(team)}
+                          id={`invite-team-${team.id}`}
+                          checked={selectedTeamIds.includes(team.id)}
                           onCheckedChange={(checked) => {
                             if (checked) {
-                              setSelectedTeams([...selectedTeams, team]);
+                              setSelectedTeamIds([...selectedTeamIds, team.id]);
                             } else {
-                              setSelectedTeams(
-                                selectedTeams.filter((t) => t !== team)
+                              setSelectedTeamIds(
+                                selectedTeamIds.filter((id) => id !== team.id)
                               );
                             }
                           }}
                         />
-                        <Label htmlFor={team}>{team}</Label>
+                        <Label htmlFor={`invite-team-${team.id}`}>
+                          {team.name}
+                        </Label>
                       </div>
                     ))}
                   </div>
@@ -332,12 +414,12 @@ export default function UsersManagementPage() {
                       <TableCell className="flex items-center gap-2">
                         {user.avatar && (
                           <img
-                            src={user.avatar}
-                            alt={user.displayName}
+                            src={getAvatarUrl(user.avatar, user.id)}
+                            alt={user.name}
                             className="w-6 h-6 rounded-full"
                           />
                         )}
-                        {user.displayName}
+                        {user.name}
                       </TableCell>
                       <TableCell>{user.email}</TableCell>
                       <TableCell>
@@ -362,8 +444,8 @@ export default function UsersManagementPage() {
                         <div className="flex gap-1 flex-wrap">
                           {user.teams.length > 0 ? (
                             user.teams.map((team) => (
-                              <Badge key={team} variant="outline">
-                                {team}
+                              <Badge key={team.id} variant="outline">
+                                {team.name}
                               </Badge>
                             ))
                           ) : (
@@ -473,7 +555,7 @@ export default function UsersManagementPage() {
       )}
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>ユーザー編集</DialogTitle>
           </DialogHeader>
@@ -483,11 +565,11 @@ export default function UsersManagementPage() {
                 <Label htmlFor="display-name">表示名</Label>
                 <Input
                   id="display-name"
-                  value={editingUser.displayName}
+                  value={editingUser.name}
                   onChange={(e) =>
                     setEditingUser({
                       ...editingUser,
-                      displayName: e.target.value,
+                      name: e.target.value,
                     })
                   }
                 />
@@ -508,11 +590,11 @@ export default function UsersManagementPage() {
               </div>
               <div>
                 <Label>ロール</Label>
-                <div className="mt-2 space-y-2">
+                <div className="mt-2 space-y-2 max-h-32 overflow-y-auto">
                   {availableRoles.map((role) => (
                     <div key={role.id} className="flex items-center space-x-2">
                       <Checkbox
-                        id={role.id}
+                        id={`role-${role.id}`}
                         checked={editingUser.roles.some(
                           (r) => r.id === role.id
                         )}
@@ -520,7 +602,26 @@ export default function UsersManagementPage() {
                           handleRoleChange(role.id, checked as boolean)
                         }
                       />
-                      <Label htmlFor={role.id}>{role.label}</Label>
+                      <Label htmlFor={`role-${role.id}`}>{role.label}</Label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <Label>チーム</Label>
+                <div className="mt-2 space-y-2 max-h-32 overflow-y-auto">
+                  {availableTeams.map((team) => (
+                    <div key={team.id} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`team-${team.id}`}
+                        checked={editingUser.teams.some(
+                          (t) => t.id === team.id
+                        )}
+                        onCheckedChange={(checked) =>
+                          handleTeamChange(team.id, checked as boolean)
+                        }
+                      />
+                      <Label htmlFor={`team-${team.id}`}>{team.name}</Label>
                     </div>
                   ))}
                 </div>
@@ -570,8 +671,8 @@ export default function UsersManagementPage() {
             {deleteTarget && (
               <>
                 <p>
-                  <span className="font-bold">{deleteTarget.displayName}</span>
-                  （{deleteTarget.email}）を削除しますか？
+                  <span className="font-bold">{deleteTarget.name}</span>（
+                  {deleteTarget.email}）を削除しますか？
                 </p>
                 <div className="flex gap-2 mt-6">
                   <Button
