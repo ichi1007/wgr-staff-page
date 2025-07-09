@@ -268,7 +268,7 @@ export default function MyPageComp() {
                     <p>
                       Discordのアバター画像が使用されます。
                       <br />
-                      ログイン時に自動的に取得されます。
+                      ログイン時に最新の画像が取得されます。
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -322,7 +322,7 @@ export default function MyPageComp() {
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
-                        <p>コピーボタン</p>
+                        <p>コピー</p>
                       </TooltipContent>
                     </Tooltip>
                   </div>
@@ -490,49 +490,6 @@ export default function MyPageComp() {
                     >
                       {profileData.id || "未連携"}
                     </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="space-y-1">
-                        <h4 className="font-medium">Discord連携状況</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {profileData.discordName
-                            ? "Discordアカウントが連携されています"
-                            : "Discordアカウントが連携されていません"}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {profileData.discordName ? (
-                          <div
-                            key={`status-connected-${profileData.discordName}`}
-                            className="flex items-center gap-2 text-green-600"
-                          >
-                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                            <span className="text-sm font-medium">
-                              連携済み
-                            </span>
-                          </div>
-                        ) : (
-                          <div
-                            key="status-disconnected"
-                            className="flex items-center gap-2 text-muted-foreground"
-                          >
-                            <div className="w-2 h-2 bg-muted-foreground rounded-full"></div>
-                            <span className="text-sm">未連携</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {!profileData.discordName && (
-                      <div className="flex gap-2">
-                        <Button variant="default" className="rounded-full">
-                          <LinkIcon className="h-4 w-4 mr-2" />
-                          Discordと連携
-                        </Button>
-                      </div>
-                    )}
                   </div>
                 </CardContent>
               </Card>
