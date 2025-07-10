@@ -31,6 +31,8 @@ import { PencilLine, Pickaxe, Save, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 export default function CreateCustomPage() {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [pointMode, setPointMode] = useState<string>("algs");
   const [customName, setCustomName] = useState<string>("");
   const [algsKillCap, setAlgsKillCap] = useState<string>("1000");
@@ -53,6 +55,53 @@ export default function CreateCustomPage() {
     ...defaultRankPoints.tdm,
   ]);
   const [showResetDialog, setShowResetDialog] = useState(false);
+
+  // フォーム送信処理
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!customName.trim()) {
+      alert("カスタム名を入力してください");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch("/api/customs", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customName,
+          pointMode,
+          algsKillCap,
+          algsKillPoint,
+          algsRankPoints,
+          polandKillPoint,
+          polandMatchPoint,
+          tdmKillPoint,
+          tdmRankPoints,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("保存に失敗しました");
+      }
+
+      const result = await response.json();
+      // リダイレクト状態に変更
+      setIsSubmitting(false);
+      setIsRedirecting(true);
+      // 直接詳細ページに移動
+      window.location.href = `/custom/list/${result.customsId}`;
+    } catch (error) {
+      console.error("Error saving custom:", error);
+      alert("保存に失敗しました。もう一度お試しください。");
+      setIsSubmitting(false);
+    }
+  };
 
   // リセット処理
   const handleReset = () => {
@@ -90,7 +139,7 @@ export default function CreateCustomPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="text">
@@ -118,7 +167,6 @@ export default function CreateCustomPage() {
                     <SelectItem value="algs">ALGS</SelectItem>
                     <SelectItem value="poland">Poland Rule</SelectItem>
                     <SelectItem value="tdm">Team Death Match</SelectItem>
-                    <SelectItem value="Tournament">Tournament Rule</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -378,9 +426,18 @@ export default function CreateCustomPage() {
           </form>
         </CardContent>
         <CardFooter className="flex-col gap-2">
-          <Button type="submit" className="w-full">
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isSubmitting || isRedirecting}
+            onClick={handleSubmit}
+          >
             <Save />
-            保存して作成
+            {isSubmitting
+              ? "保存中..."
+              : isRedirecting
+              ? "移動中..."
+              : "保存して詳細ページへ"}
           </Button>
           <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
             <DialogTrigger asChild>
@@ -388,6 +445,7 @@ export default function CreateCustomPage() {
                 variant="outline"
                 className="w-full"
                 type="button"
+                disabled={isSubmitting || isRedirecting}
                 onClick={() => setShowResetDialog(true)}
               >
                 <Trash2 className="text-red-500" />
@@ -406,6 +464,7 @@ export default function CreateCustomPage() {
                   variant="outline"
                   onClick={() => setShowResetDialog(false)}
                   type="button"
+                  disabled={isSubmitting || isRedirecting}
                 >
                   キャンセル
                 </Button>
@@ -416,6 +475,7 @@ export default function CreateCustomPage() {
                     setShowResetDialog(false);
                   }}
                   type="button"
+                  disabled={isSubmitting || isRedirecting}
                 >
                   リセットする
                 </Button>

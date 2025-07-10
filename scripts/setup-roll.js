@@ -57,7 +57,7 @@ async function setupRolesAndTeams() {
     console.log('1. Prisma Studio を開いて確認: npx prisma studio');
     console.log('2. 管理者ユーザーにTopAdminチームとadminロールを手動で割り当て');
     console.log('3. または下記のコマンドで特定ユーザーに管理者権限を付与:');
-    console.log('   node scripts/assign-admin.js <DiscordUserId>');
+    console.log('   pnpm db:assign:admin <DiscordUserId>');
 
   } catch (error) {
     console.error('❌ セットアップ中にエラーが発生しました:', error);
