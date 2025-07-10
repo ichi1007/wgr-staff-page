@@ -32,10 +32,17 @@ interface MatchDataInput {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } } // await 外し
+  context: { params?: { id: string } } // 型を修正
 ) {
   try {
-    const { id } = params; // await 外し
+    const { params } = context;
+    if (!params || !params.id) {
+      return NextResponse.json(
+        { error: "IDが指定されていません" },
+        { status: 400 }
+      );
+    }
+    const { id } = params;
     const {
       matchData,
       killPoint,
