@@ -72,7 +72,7 @@ model Verify {
 model Customs {
   id         String       @id @default(uuid())
   itemCount  Int
-  createdAt  DateTime     @default(now()) // createdAtフィールドを追加
+  createdAt  DateTime     @default(now())
   customItem CustomItem[]
 }
 
