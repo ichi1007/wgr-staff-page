@@ -32,11 +32,10 @@ interface MatchDataInput {
 
 export async function POST(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { params } = context;
-    const { id } = params;
+    const { id } = await params;
     const {
       matchData,
       killPoint,
@@ -103,7 +102,7 @@ export async function POST(
       const teamMap = new Map<
         string,
         { teamNum: number; placement: number; totalKills: number }
-      >();
+      >(); // 型を明確化
 
       // PlayerResultを作成
       for (const player of matchData.player_results) {
@@ -132,7 +131,7 @@ export async function POST(
             totalKills: 0,
           });
         }
-        teamMap.get(player.teamName)!.totalKills += player.kills;
+        teamMap.get(player.teamName)!.totalKills += player.kills; // 非nullアサーションを追加
       }
 
       // TeamResultを作成
