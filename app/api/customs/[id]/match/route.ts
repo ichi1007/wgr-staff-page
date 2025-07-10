@@ -32,10 +32,10 @@ interface MatchDataInput {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } } // await 外し
 ) {
   try {
-    const { id } = await params;
+    const { id } = params; // await 外し
     const {
       matchData,
       killPoint,
