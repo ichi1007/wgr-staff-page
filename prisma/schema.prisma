@@ -72,6 +72,7 @@ model Verify {
 model Customs {
   id         String       @id @default(uuid())
   itemCount  Int
+  createdAt  DateTime     @default(now()) // createdAtフィールドを追加
   customItem CustomItem[]
 }
 
@@ -280,4 +281,5 @@ model TeamData {
   placementPoint  Int
   killPoint       Int
   allPoint        Int
+}
 }
