@@ -48,17 +48,6 @@ export default function AccountButton() {
     }
   }, [session]);
 
-  // URLの有効性をチェックする関数
-  const isValidUrl = (url: string | undefined): boolean => {
-    if (!url) return false;
-    try {
-      new URL(url);
-      return true;
-    } catch {
-      return false;
-    }
-  };
-
   // Discord CDNのアバターURLを構築する関数
   const getDiscordAvatarUrl = (
     avatar: string | undefined,

@@ -33,7 +33,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Plus, Trash2, ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -69,6 +69,23 @@ interface PlayerResult {
   shots: number;
 }
 
+interface TeamResult {
+  id: string;
+  name: string;
+  placement: number;
+  placementPoint: number;
+  killPoint: number;
+  allPoint: number;
+}
+
+interface Match {
+  id: string;
+  match_start: number;
+  map_name: string;
+  player_results: PlayerResult[];
+  teamResult: TeamResult[];
+}
+
 export default function CustomIdPageComp() {
   const id = useParams().id;
   const router = useRouter();
@@ -80,12 +97,19 @@ export default function CustomIdPageComp() {
   const [dialogStep, setDialogStep] = useState(1);
   const [killPoint, setKillPoint] = useState(1);
   const [statsCode, setStatsCode] = useState("");
-  const [matchData, setMatchData] = useState<any[]>([]);
+  const [matchData, setMatchData] = useState<Match[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedMatch, setSelectedMatch] = useState<any>(null);
   const [hasFetched, setHasFetched] = useState(false);
-  const [savedMatches, setSavedMatches] = useState<any[]>([]);
-  const [totalResults, setTotalResults] = useState<any[]>([]);
+  const [savedMatches, setSavedMatches] = useState<Match[]>([]);
+  const [totalResults, setTotalResults] = useState<
+    {
+      name: string;
+      totalPlacementPoint: number;
+      totalKillPoint: number;
+      totalAllPoint: number;
+      matchCount: number;
+    }[]
+  >([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [matchPoint, setMatchPoint] = useState<number | null>(null); // matchPointを追加
 
@@ -151,7 +175,7 @@ export default function CustomIdPageComp() {
   }, [id]);
 
   // 保存されたマッチデータを取得
-  const fetchSavedMatches = async () => {
+  const fetchSavedMatches = useCallback(async () => {
     try {
       const response = await axios.get(`/api/customs/${id}/matches`);
       setSavedMatches(response.data);
@@ -161,14 +185,23 @@ export default function CustomIdPageComp() {
     } catch (error) {
       console.error("Error fetching saved matches:", error);
     }
-  };
+  }, [id]);
 
   // 合計結果を計算
-  const calculateTotalResults = (matches: any[]) => {
-    const teamTotals = new Map<string, any>();
+  const calculateTotalResults = (matches: Match[]) => {
+    const teamTotals = new Map<
+      string,
+      {
+        name: string;
+        totalPlacementPoint: number;
+        totalKillPoint: number;
+        totalAllPoint: number;
+        matchCount: number;
+      }
+    >();
 
     matches.forEach((match) => {
-      match.teamResult.forEach((team: any) => {
+      match.teamResult.forEach((team) => {
         if (!teamTotals.has(team.name)) {
           teamTotals.set(team.name, {
             name: team.name,
@@ -180,10 +213,12 @@ export default function CustomIdPageComp() {
         }
 
         const teamData = teamTotals.get(team.name);
-        teamData.totalPlacementPoint += team.placementPoint;
-        teamData.totalKillPoint += team.killPoint;
-        teamData.totalAllPoint += team.allPoint;
-        teamData.matchCount += 1;
+        if (teamData) {
+          teamData.totalPlacementPoint += team.placementPoint;
+          teamData.totalKillPoint += team.killPoint;
+          teamData.totalAllPoint += team.allPoint;
+          teamData.matchCount += 1;
+        }
       });
     });
 
@@ -200,7 +235,7 @@ export default function CustomIdPageComp() {
 
   useEffect(() => {
     fetchSavedMatches();
-  }, [id]);
+  }, [fetchSavedMatches]); // fetchSavedMatchesはuseCallbackでラップ済み
 
   const handleDelete = async () => {
     try {
@@ -243,7 +278,7 @@ export default function CustomIdPageComp() {
     }
   };
 
-  const handleSelectMatch = async (match: any) => {
+  const handleSelectMatch = async (match: Match) => {
     try {
       setIsLoading(true);
 
@@ -251,10 +286,10 @@ export default function CustomIdPageComp() {
       const response = await axios.post(`/api/customs/${id}/match`, {
         matchData: match,
         killPoint: killPoint,
+        placementPoint: algsRankPoints, // プレースメントポイントを含める
       });
 
       if (response.data.success) {
-        setSelectedMatch(match);
         console.log("Match saved successfully:", response.data);
 
         // 最新データを再取得
@@ -265,7 +300,6 @@ export default function CustomIdPageComp() {
       }
     } catch (error) {
       console.error("Error saving match:", error);
-      alert("マッチデータの保存に失敗しました");
     } finally {
       setIsLoading(false);
     }
@@ -617,7 +651,8 @@ export default function CustomIdPageComp() {
             <TabsContent value="total">
               <div className="mb-4">
                 <h3 className="text-lg font-bold">
-                  合計 {matchPoint !== null && `(マッチポイント: ${matchPoint}pt)`}
+                  合計{" "}
+                  {matchPoint !== null && `(マッチポイント: ${matchPoint}pt)`}
                 </h3>
               </div>
               <div className="grid grid-cols-[80px_1fr_80px_80px_80px] mt-5 bg-[#262626] text-white font-extrabold px-5 py-3">
@@ -648,10 +683,10 @@ export default function CustomIdPageComp() {
               })}
             </TabsContent>
 
-            {savedMatches.map((match, index) => (
-              <TabsContent key={match.id} value={`match_${index + 1}`}>
+            {savedMatches.map((match) => (
+              <TabsContent key={match.id} value={`match_${match.id}`}>
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-bold">マッチ{index + 1}</h3>
+                  <h3 className="text-lg font-bold">マッチ{match.id}</h3>
                   <Button
                     variant="destructive"
                     onClick={() => handleDeleteMatch(match.id)}
@@ -668,7 +703,7 @@ export default function CustomIdPageComp() {
                   <p>KP</p>
                   <p>ALL</p>
                 </div>
-                {match.teamResult.map((team: any, teamIndex: number) => (
+                {match.teamResult.map((team: TeamResult) => (
                   <div
                     key={team.id}
                     className="grid grid-cols-[80px_1fr_80px_80px_80px] font-extrabold px-5 py-3"

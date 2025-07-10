@@ -1,8 +1,15 @@
 import NextAuth from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
 import { PrismaClient } from "@prisma/client";
+import { Session, User as NextAuthUser, Profile } from "next-auth";
+import { JWT } from "next-auth/jwt";
 
 const prisma = new PrismaClient();
+
+interface DiscordProfile extends Profile {
+  username?: string;
+  avatar?: string;
+}
 
 const authOptions = {
   providers: [
@@ -13,27 +20,26 @@ const authOptions = {
   ],
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
-    async signIn({ user, profile }: any) {
+    async signIn({ user, profile }: { user: NextAuthUser; profile?: Profile }) {
       try {
-        // ユーザーを検索（Discord IDをUser IDとして使用）
-        let existingUser = await prisma.user.findUnique({
+        const existingUser = await prisma.user.findUnique({
           where: { id: user.id },
           include: { discord: true },
         });
 
         if (!existingUser) {
-          // 新しいユーザーとDiscordレコードを同時に作成
           await prisma.user.create({
             data: {
-              id: user.id, // Discord IDをそのままUser IDとして使用
-              name: user.name || profile.username,
-              email: user.email,
+              id: user.id,
+              name: user.name || (profile as DiscordProfile)?.username || "",
+              email: user.email || "",
               discord: {
                 create: {
                   discordUserId: user.id,
-                  discordName: user.name || profile.username,
+                  discordName:
+                    user.name || (profile as DiscordProfile)?.username || "",
                   avatar:
-                    profile.avatar ||
+                    (profile as DiscordProfile)?.avatar ||
                     user.image?.split("/").pop()?.split(".")[0],
                 },
               },
@@ -41,12 +47,11 @@ const authOptions = {
             include: { discord: true },
           });
         } else {
-          // 既存のユーザーの場合はavatarのみ更新
           if (existingUser.discord) {
             const newAvatar =
-              profile.avatar || user.image?.split("/").pop()?.split(".")[0];
+              (profile as DiscordProfile)?.avatar ||
+              user.image?.split("/").pop()?.split(".")[0];
 
-            // avatarが変更された場合のみ更新
             if (existingUser.discord.avatar !== newAvatar) {
               await prisma.discord.update({
                 where: { discordUserId: user.id },
@@ -56,14 +61,15 @@ const authOptions = {
               });
             }
           } else {
-            // Discordレコードが存在しない場合は作成
             await prisma.discord.create({
               data: {
                 discordUserId: user.id,
                 userId: user.id,
-                discordName: user.name || profile.username,
+                discordName:
+                  user.name || (profile as DiscordProfile)?.username || "",
                 avatar:
-                  profile.avatar || user.image?.split("/").pop()?.split(".")[0],
+                  (profile as DiscordProfile)?.avatar ||
+                  user.image?.split("/").pop()?.split(".")[0],
               },
             });
           }
@@ -75,9 +81,8 @@ const authOptions = {
         return false;
       }
     },
-    async session({ session, token }: any) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (token?.discordUserId) {
-        // データベースでユーザーの存在を確認
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.discordUserId },
@@ -85,30 +90,26 @@ const authOptions = {
           });
 
           if (!dbUser) {
-            // ユーザーが存在しない場合はセッションを無効化
-            return null;
+            throw new Error("User not found");
           }
 
           session.user.discordUserId = token.discordUserId;
           session.user.id = token.discordUserId;
-
-          // ロールとチーム情報をセッションに追加（nullチェック）
           session.user.hasAdminRole = token.hasAdminRole || false;
           session.user.roles = token.roles || [];
           session.user.teams = token.teams || [];
         } catch (error) {
           console.error("Error checking user in database:", error);
-          return null;
+          throw new Error("Session validation failed");
         }
       }
       return session;
     },
-    async jwt({ token, user }: any) {
+    async jwt({ token, user }: { token: JWT; user?: NextAuthUser }) {
       if (user) {
         token.discordUserId = user.id;
       }
 
-      // JWTトークンが既に存在する場合、データベースでユーザーとロール情報を確認
       if (token?.discordUserId) {
         try {
           const dbUser = await prisma.user.findUnique({
@@ -128,21 +129,33 @@ const authOptions = {
           });
 
           if (!dbUser) {
-            // ユーザーが存在しない場合はトークンを無効化
             console.warn(`User not found: ${token.discordUserId}`);
-            return null;
+            // nullを返す代わりに、discordUserIdを削除して無効化
+            delete token.discordUserId;
+            token.hasAdminRole = false;
+            token.roles = [];
+            token.teams = [];
+            return token;
           }
 
-          // ロール情報をトークンに追加
-          const roles = dbUser.userRoles?.map((ur) => ur.role) || [];
-          const teams = dbUser.userTeams?.map((ut) => ut.team) || [];
+          const roles =
+            dbUser.userRoles?.map((ur) => ({
+              id: parseInt(ur.role.id),
+              name: ur.role.name,
+              label: ur.role.label,
+            })) || [];
+
+          const teams =
+            dbUser.userTeams?.map((ut) => ({
+              id: parseInt(ut.team.id),
+              name: ut.team.name,
+            })) || [];
 
           token.hasAdminRole = roles.some((role) => role.name === "admin");
           token.roles = roles;
           token.teams = teams;
         } catch (error) {
           console.error("Error checking user in JWT callback:", error);
-          // エラーが発生した場合はデフォルト値を設定
           token.hasAdminRole = false;
           token.roles = [];
           token.teams = [];
@@ -154,6 +167,5 @@ const authOptions = {
   },
 };
 
-// App Router用にGET/POSTをエクスポート
 export const GET = NextAuth(authOptions);
 export const POST = NextAuth(authOptions);

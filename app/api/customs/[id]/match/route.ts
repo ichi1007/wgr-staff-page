@@ -3,13 +3,43 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+interface PlayerResultInput {
+  teamNum: number;
+  teamName: string;
+  teamPlacement: number;
+  playerName: string;
+  characterName: string;
+  kills: number;
+  assists: number;
+  damageDealt: number;
+  shots: number;
+  hits: number;
+  nidHash: string;
+  headshots: number;
+  knockdowns: number;
+  revivesGiven: number;
+  respawnsGiven: number;
+  survivalTime: number;
+  hardware: string;
+}
+
+interface MatchDataInput {
+  map_name: string;
+  match_id: string;
+  match_start: number;
+  player_results: PlayerResultInput[];
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
-    const { matchData, killPoint } = await request.json();
+    const {
+      matchData,
+      killPoint,
+    }: { matchData: MatchDataInput; killPoint: number } = await request.json();
 
     // トランザクションでマッチデータを保存
     const result = await prisma.$transaction(async (tx) => {
@@ -69,7 +99,10 @@ export async function POST(
       });
 
       // プレイヤーデータをチーム別に集計
-      const teamMap = new Map<string, any>();
+      const teamMap = new Map<
+        string,
+        { teamNum: number; placement: number; totalKills: number }
+      >(); // 型を明確化
 
       // PlayerResultを作成
       for (const player of matchData.player_results) {
@@ -98,7 +131,7 @@ export async function POST(
             totalKills: 0,
           });
         }
-        teamMap.get(player.teamName).totalKills += player.kills;
+        teamMap.get(player.teamName)!.totalKills += player.kills; // 非nullアサーションを追加
       }
 
       // TeamResultを作成

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +39,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import Image from "next/image"; // Import Image component
 
 interface User {
   id: string;
@@ -121,7 +122,7 @@ export default function UsersManagementPage() {
   };
 
   // データベースからユーザー情報を取得
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch("/api/users");
@@ -141,13 +142,13 @@ export default function UsersManagementPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage]);
 
   useEffect(() => {
     fetchRoles();
     fetchTeams();
     fetchUsers();
-  }, []);
+  }, [fetchUsers]); // fetchUsersはuseCallbackでラップ済み
 
   const handleEditUser = (user: User) => {
     setEditingUser({ ...user });
@@ -413,10 +414,12 @@ export default function UsersManagementPage() {
                     <TableRow key={user.id}>
                       <TableCell className="flex items-center gap-2">
                         {user.avatar && (
-                          <img
-                            src={getAvatarUrl(user.avatar, user.id)}
+                          <Image
+                            src={getAvatarUrl(user.avatar, user.id)!} // Assert non-null after check
                             alt={user.name}
-                            className="w-6 h-6 rounded-full"
+                            width={24} // Specify width
+                            height={24} // Specify height
+                            className="rounded-full"
                           />
                         )}
                         {user.name}
