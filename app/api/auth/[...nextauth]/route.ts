@@ -1,10 +1,8 @@
 import NextAuth from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
-import { PrismaClient } from "@prisma/client";
+const prisma = new (require("@prisma/client").PrismaClient)();
 import { Session, User as NextAuthUser, Profile } from "next-auth";
 import { JWT } from "next-auth/jwt";
-
-const prisma = new PrismaClient();
 
 interface DiscordProfile extends Profile {
   username?: string;
@@ -139,19 +137,19 @@ const authOptions = {
           }
 
           const roles =
-            dbUser.userRoles?.map((ur) => ({
+            dbUser.userRoles?.map((ur: any) => ({
               id: parseInt(ur.role.id),
               name: ur.role.name,
               label: ur.role.label,
             })) || [];
 
           const teams =
-            dbUser.userTeams?.map((ut) => ({
+            dbUser.userTeams?.map((ut: any) => ({
               id: parseInt(ut.team.id),
               name: ut.team.name,
             })) || [];
 
-          token.hasAdminRole = roles.some((role) => role.name === "admin");
+          token.hasAdminRole = roles.some((role: any) => role.name === "admin");
           token.roles = roles;
           token.teams = teams;
         } catch (error) {
