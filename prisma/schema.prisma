@@ -282,4 +282,3 @@ model TeamData {
   killPoint       Int
   allPoint        Int
 }
-}
