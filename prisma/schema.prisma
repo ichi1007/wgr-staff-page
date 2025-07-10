@@ -8,35 +8,35 @@ generator client {
 }
 
 model User {
-  id        String      @id
+  id        String     @id
   name      String
-  email     String      @unique
-  createdAt DateTime    @default(now())
-  status    Boolean     @default(false)
-  verifyId  Int?        @unique
-  verify    Verify?     @relation(fields: [verifyId], references: [id])
+  email     String     @unique
+  createdAt DateTime   @default(now())
+  status    Boolean    @default(false)
+  verifyId  String?    @unique
+  verify    Verify?    @relation(fields: [verifyId], references: [id])
   discord   Discord?
   userRoles UserRole[]
   userTeams UserTeam[]
 }
 
 model Discord {
-  discordUserId String @id
+  discordUserId String  @id
   discordName   String
   avatar        String?
-  userId        String @unique
-  user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String  @unique
+  user          User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Team {
-  id        Int        @id @default(autoincrement())
+  id        String     @id @default(uuid())
   name      String     @unique
   createdAt DateTime   @default(now())
   userTeams UserTeam[]
 }
 
 model Role {
-  id        Int        @id @default(autoincrement())
+  id        String     @id @default(uuid())
   name      String     @unique
   label     String
   createdAt DateTime   @default(now())
@@ -45,7 +45,7 @@ model Role {
 
 model UserRole {
   userId String
-  roleId Int
+  roleId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
@@ -54,7 +54,7 @@ model UserRole {
 
 model UserTeam {
   userId String
-  teamId Int
+  teamId String
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
@@ -62,9 +62,222 @@ model UserTeam {
 }
 
 model Verify {
-  id        Int     @id @default(autoincrement())
+  id        String  @id @default(uuid())
   email     Boolean @default(false)
   emailCode String
   teamCode  String
   user      User?
+}
+
+model Customs {
+  id         String       @id @default(uuid())
+  itemCount  Int
+  customItem CustomItem[]
+}
+
+model CustomItem {
+  id             String          @id @default(uuid())
+  createdAt      DateTime        @default(now())
+  customsId      String
+  customs        Customs         @relation(fields: [customsId], references: [id])
+  customSetting  CustomSetting?
+  playerCountTop PlayerCountTop?
+  characterUse   CharacterUse?
+  customData     CustomData[]
+  customDataAll  CustomDataAll?
+}
+
+model CustomSetting {
+  id               String          @id @default(uuid())
+  customItemId     String          @unique
+  customItem       CustomItem      @relation(fields: [customItemId], references: [id])
+  customName       String
+  algs             Boolean         @default(false)
+  killPointLimit   Int?
+  killPoint        Int?
+  placementPointId String?
+  placementPoint   PlacementPoint? @relation(fields: [placementPointId], references: [id])
+
+  polandRule      Boolean @default(false)
+  polandKillPoint Int?
+  matchPoint      Int?
+
+  teamDeathMatch Boolean @default(false)
+  tdmKillPoint   Int?
+  tdmPoint1      Int?
+  tdmPoint2      Int?
+}
+
+model PlacementPoint {
+  id             String          @id @default(uuid())
+  place1         Int
+  place2         Int
+  place3         Int
+  place4         Int
+  place5         Int
+  place6         Int
+  place7         Int
+  place8         Int
+  place9         Int
+  place10        Int
+  place11        Int
+  place12        Int
+  place13        Int
+  place14        Int
+  place15        Int
+  place16        Int
+  place17        Int
+  place18        Int
+  place19        Int
+  place20        Int
+  customSettings CustomSetting[]
+}
+
+model CustomData {
+  id           String         @id @default(uuid())
+  customItemId String
+  customItem   CustomItem     @relation(fields: [customItemId], references: [id])
+  mapName      String
+  mid          String
+  matchStart   String
+  playerResult PlayerResult[]
+  teamResult   TeamResult[]
+}
+
+model PlayerResult {
+  id            String     @id @default(uuid())
+  customDataId  String
+  customData    CustomData @relation(fields: [customDataId], references: [id])
+  teamNum       Int
+  teamName      String
+  teamPlacement Int
+  playerName    String
+  characterName String
+  kill          Int
+  assists       Int
+  damage        Float
+  shots         Int
+  hits          Int
+  killPoint     Float
+}
+
+model TeamResult {
+  id             String     @id @default(uuid())
+  customDataId   String
+  customData     CustomData @relation(fields: [customDataId], references: [id])
+  name           String
+  teamNum        Int
+  placement      Int
+  placementPoint Float
+  killPoint      Float
+  allPoint       Float
+}
+
+model PlayerCountTop {
+  id           String          @id @default(uuid())
+  customItemId String          @unique
+  customItem   CustomItem      @relation(fields: [customItemId], references: [id])
+  killTop      KillCountTop?
+  damageTop    DamageCountTop?
+}
+
+model KillCountTop {
+  id               String         @id @default(uuid())
+  playerCountTopId String         @unique
+  playerCountTop   PlayerCountTop @relation(fields: [playerCountTopId], references: [id])
+  playerName1      String
+  kill1            Int
+  damage1          Int
+  playerName2      String
+  kill2            Int
+  damage2          Int
+  playerName3      String
+  kill3            Int
+  damage3          Int
+  playerName4      String
+  kill4            Int
+  damage4          Int
+  playerName5      String
+  kill5            Int
+  damage5          Int
+}
+
+model DamageCountTop {
+  id               String         @id @default(uuid())
+  playerCountTopId String         @unique
+  playerCountTop   PlayerCountTop @relation(fields: [playerCountTopId], references: [id])
+  playerName1      String
+  kill1            Int
+  damage1          Int
+  playerName2      String
+  kill2            Int
+  damage2          Int
+  playerName3      String
+  kill3            Int
+  damage3          Int
+  playerName4      String
+  kill4            Int
+  damage4          Int
+  playerName5      String
+  kill5            Int
+  damage5          Int
+}
+
+model CharacterUse {
+  id           String                @id @default(uuid())
+  customItemId String                @unique
+  customItem   CustomItem            @relation(fields: [customItemId], references: [id])
+  lastGet      DateTime              @default(now())
+  matches      CharacterUseMatches[]
+}
+
+model CharacterUseMatches {
+  id             String       @id @default(uuid())
+  characterUseId String
+  characterUse   CharacterUse @relation(fields: [characterUseId], references: [id])
+  alter          Int          @default(0)
+  ash            Int          @default(0)
+  ballistic      Int          @default(0)
+  bangalore      Int          @default(0)
+  bloodhound     Int          @default(0)
+  catalyst       Int          @default(0)
+  caustic        Int          @default(0)
+  conduit        Int          @default(0)
+  crypto         Int          @default(0)
+  fuse           Int          @default(0)
+  gibraltar      Int          @default(0)
+  horizon        Int          @default(0)
+  lifeline       Int          @default(0)
+  loba           Int          @default(0)
+  madmaggie      Int          @default(0)
+  mirage         Int          @default(0)
+  newcastle      Int          @default(0)
+  octane         Int          @default(0)
+  pathfinder     Int          @default(0)
+  rampart        Int          @default(0)
+  revenant       Int          @default(0)
+  seer           Int          @default(0)
+  valkyrie       Int          @default(0)
+  vantage        Int          @default(0)
+  wattson        Int          @default(0)
+  wraith         Int          @default(0)
+  banCharacter   String?
+}
+
+model CustomDataAll {
+  id           String     @id @default(uuid())
+  customItemId String     @unique
+  customItem   CustomItem @relation(fields: [customItemId], references: [id])
+  teams        TeamData[]
+}
+
+model TeamData {
+  id              String        @id @default(uuid())
+  customDataAllId String
+  customDataAll   CustomDataAll @relation(fields: [customDataAllId], references: [id])
+  placement       Int
+  teamName        String
+  placementPoint  Int
+  killPoint       Int
+  allPoint        Int
 }
