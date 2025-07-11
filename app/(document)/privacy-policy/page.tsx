@@ -48,7 +48,10 @@ export default function CreatePage() {
           <blockquote className="border-l-4 pl-4">
             運営者：ichi
             <br />
-            連絡先：<Link href="mailto:ichi@whitegrimreaper.jp" className="underline">ichi@whitegrimreaper.jp</Link>
+            連絡先：
+            <Link href="mailto:ichi@whitegrimreaper.jp" className="underline">
+              ichi@whitegrimreaper.jp
+            </Link>
           </blockquote>
         </CardContent>
       </Card>
@@ -59,7 +62,8 @@ export default function CreatePage() {
         <CardContent>
           <h2 className="text-lg font-semibold">第1条（適用）</h2>
           <p>
-            本規約は、ユーザーと当サービスとの間のすべての関係に適用されます。
+            本規約は、ユーザーとWGR Staff
+            Page(仮称)との間のすべての関係に適用されます。
           </p>
           <h2 className="mt-4 text-lg font-semibold">第2条（利用登録）</h2>
           <p>
@@ -76,7 +80,8 @@ export default function CreatePage() {
             第4条（サービスの提供の停止）
           </h2>
           <p>
-            当サービスは、以下の場合にユーザーへの事前通知なくサービスの全部または一部を停止できるものとします。
+            WGR Staff
+            Page(仮称)は、以下の場合にユーザーへの事前通知なくサービスの全部または一部を停止できるものとします。
           </p>
           <ul className="list-disc pl-6">
             <li>サーバーメンテナンスやシステム障害</li>
@@ -94,7 +99,8 @@ export default function CreatePage() {
             第6条（利用制限および登録抹消）
           </h2>
           <p>
-            ユーザーが本規約に違反した場合、当サービスは通知なく利用制限または登録抹消を行うことがあります。
+            ユーザーが本規約に違反した場合、WGR Staff
+            Page(仮称)は通知なく利用制限または登録抹消を行うことがあります。
           </p>
           <h2 className="mt-4 text-lg font-semibold">第7条（規約の変更）</h2>
           <p>
