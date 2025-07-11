@@ -73,6 +73,9 @@ export default function TopPage() {
       {/* 中央コンテンツ */}
       <div className="flex flex-1 justify-center items-center min-h-[calc(100vh-theme(spacing.16))]">
         <div className="bg-white rounded-md px-50 py-8">
+          <h1 className="text-center text-black">
+            WGR Staff Page(仮称)
+          </h1>
           <h1 className="text-center text-black text-2xl">
             ようこそ
             <span className="font-extrabold px-1">
