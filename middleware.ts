@@ -46,7 +46,8 @@ export const config = {
       - その他のパブリックAPIエンドポイント ("/public/")
       - _errorページ ("/_error")
       - _not-foundページ ("/_not-found")
+      - Googleサイト認証ファイル ("/google17b609747b541c79.html")
     */
-    "/((?!$|public/|auth/|_error|_not-found|api/auth/|about$|about/|privacy-policy$|privacy-policy/|support$|support/).*)",
+    "/((?!$|public/|auth/|_error|_not-found|api/auth/|about$|about/|privacy-policy$|privacy-policy/|support$|support/|google17b609747b541c79\\.html$).*)",
   ],
 };
