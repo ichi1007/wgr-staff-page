@@ -35,14 +35,17 @@ type Custom = {
 export default function CustomListPage() {
   const [customs, setCustoms] = useState<Custom[]>([]); // 型を指定
   const [loading, setLoading] = useState(false); // ローディング状態を追加
+  const [error, setError] = useState<string | null>(null); // エラー状態を追加
 
   const fetchCustoms = async () => {
     try {
-      setLoading(true); // ローディング開始
+      setLoading(true);
+      setError(null); // エラーをリセット
       const response = await axios.get<Custom[]>("/api/customs/list"); // 型を指定
       setCustoms(response.data);
     } catch (error) {
       console.error("Error fetching customs:", error);
+      setError("カスタム一覧の取得に失敗しました。再試行してください。"); // エラーメッセージを設定
     } finally {
       setLoading(false); // ローディング終了
     }
@@ -77,6 +80,10 @@ export default function CustomListPage() {
           </CardAction>
         </CardHeader>
         <CardContent className="flex-1 overflow-hidden p-0">
+          {/* エラーメッセージを表示 */}
+          {error && (
+            <div className="text-red-500 text-center mb-4">{error}</div>
+          )}
           <ScrollArea className="h-full px-6">
             <div className="space-y-4 py-6">
               {customs.map((custom) => (

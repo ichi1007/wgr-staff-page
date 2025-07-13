@@ -25,11 +25,23 @@ export async function GET(
         },
       },
       orderBy: {
-        id: "asc",
+        // CustomDataにcreatedAtがないため、関連するCustomItemのcreatedAtでソート
+        // 古い順 (昇順) に変更
+        customItem: {
+          createdAt: "asc",
+        },
       },
     });
 
-    return NextResponse.json(matches);
+    // レスポンスデータを整形してマップ名と開始時刻を含める
+    // APIから古い順で取得されるため、ここでは順序変更は不要
+    const formattedMatches = matches.map((match) => ({
+      ...match,
+      mapName: match.mapName,
+      matchStart: match.matchStart,
+    }));
+
+    return NextResponse.json(formattedMatches);
   } catch (error) {
     console.error("Error fetching matches:", error);
     return NextResponse.json(

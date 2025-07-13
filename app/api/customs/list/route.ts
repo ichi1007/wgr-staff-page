@@ -7,7 +7,7 @@ export async function GET() {
   try {
     const customs = await prisma.customs.findMany({
       include: {
-        customItem: {
+        CustomItem: {
           include: {
             customSetting: true,
           },
@@ -20,12 +20,12 @@ export async function GET() {
 
     const response = customs.map((custom) => ({
       id: custom.id,
-      customName: custom.customItem[0]?.customSetting?.customName || "Unknown",
+      customName: custom.CustomItem[0]?.customSetting?.customName || "Unknown",
       creatorName: "Unknown username",
-      createdAt: custom.customItem[0]?.createdAt || new Date().toISOString(),
-      pointMode: custom.customItem[0]?.customSetting?.algs
+      createdAt: custom.CustomItem[0]?.createdAt || new Date().toISOString(),
+      pointMode: custom.CustomItem[0]?.customSetting?.algs
         ? "ALGS"
-        : custom.customItem[0]?.customSetting?.polandRule
+        : custom.CustomItem[0]?.customSetting?.polandRule
         ? "Poland Rule"
         : "Custom Rule",
     }));
@@ -33,8 +33,12 @@ export async function GET() {
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching customs list:", error);
+
     return NextResponse.json(
-      { error: "カスタム一覧の取得に失敗しました" },
+      {
+        error: "カスタム一覧の取得に失敗しました",
+        details: (error as Error).message,
+      },
       { status: 500 }
     );
   }

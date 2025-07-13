@@ -6,5 +6,9 @@ export const metadata = {
 };
 
 export default function CreatePage() {
-  return <div><CreateCustomPage /></div>;
+  return (
+    <div>
+      <CreateCustomPage />
+    </div>
+  );
 }

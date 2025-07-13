@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:setup:roles": "node scripts/setup-roll.js",
-    "db:assign:admin": "node scripts/assign-admin.js"
+    "db_setup_roles": "node scripts/setup-roll.js",
+    "db_assign_admin": "node scripts/assign-admin.js"
   },
   "dependencies": {
     "@prisma/client": "^6.10.1",
@@ -31,6 +31,8 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.19.2",
+    "google-auth-library": "^10.1.0",
+    "googleapis": "^152.0.0",
     "lucide-react": "^0.523.0",
     "next": "15.3.4",
     "next-auth": "^4.24.11",

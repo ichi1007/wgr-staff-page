@@ -18,23 +18,32 @@ import {
 } from "@/components/ui/select";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PencilLine, Pickaxe, Save, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function CreateCustomPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [pointMode, setPointMode] = useState<string>("algs");
   const [customName, setCustomName] = useState<string>("");
+  const [defaultTeamsInput, setDefaultTeamsInput] = useState<string>(""); // デフォルトチーム入力用のstateを追加
   const [algsKillCap, setAlgsKillCap] = useState<string>("1000");
   const [algsKillPoint, setAlgsKillPoint] = useState<string>("1");
   const [polandKillPoint, setPolandKillPoint] = useState<string>("1");
@@ -56,6 +65,62 @@ export default function CreateCustomPage() {
   ]);
   const [showResetDialog, setShowResetDialog] = useState(false);
 
+  // デフォルトチーム textarea の入力変更ハンドラ
+  const handleDefaultTeamsInputChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setDefaultTeamsInput(e.target.value);
+  };
+
+  // JSON ファイルアップロードハンドラ
+  const handleJsonFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const jsonContent = event.target?.result as string;
+        const parsedData = JSON.parse(jsonContent);
+
+        let teamNames: string[] = [];
+
+        if (Array.isArray(parsedData)) {
+          // JSONがチーム名の配列の場合
+          teamNames = parsedData.map((item) => String(item));
+        } else if (typeof parsedData === "object" && parsedData !== null) {
+          // JSONが { "1": "チームA", "2": "チームB" } のようなオブジェクトの場合
+          // キーを数値としてソートし、値を抽出
+          teamNames = Object.keys(parsedData)
+            .sort((a, b) => Number(a) - Number(b))
+            .map((key) => String(parsedData[key]));
+        } else {
+          throw new Error("Unsupported JSON format.");
+        }
+
+        // 抽出したチーム名を改行区切りでtextareaにセット
+        setDefaultTeamsInput(teamNames.join("\n"));
+      } catch (error) {
+        console.error("Error reading or parsing JSON file:", error);
+        alert(
+          "JSONファイルの読み込みまたはパースに失敗しました。形式を確認してください。"
+        );
+        setDefaultTeamsInput(""); // エラー時は入力をクリア
+      } finally {
+        // 同じファイルを再度選択できるようにファイル入力の値をリセット
+        e.target.value = "";
+      }
+    };
+    reader.onerror = (error) => {
+      console.error("File reading error:", error);
+      alert("ファイルの読み込み中にエラーが発生しました。");
+      setDefaultTeamsInput(""); // エラー時は入力をクリア
+      // ファイル入力の値をリセット
+      e.target.value = "";
+    };
+    reader.readAsText(file);
+  };
+
   // フォーム送信処理
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -66,6 +131,18 @@ export default function CreateCustomPage() {
     }
 
     setIsSubmitting(true);
+
+    // デフォルトチームの入力値を改行で分割し、空行を除去して配列にする
+    const defaultTeamsArray = defaultTeamsInput
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line !== "");
+
+    // Note: defaultTeam スキーマは固定フィールド名 (team1Name, team2Name, ...) です。
+    // この配列を適切なスキーマフィールドにマッピングするか、関連する defaultTeam エントリを作成する処理は
+    // バックエンドAPI (/api/customs) で行う必要があります。
+    // このUI変更では、ペイロードに配列を含めるだけです。
+    // デフォルトチームを保存するためのバックエンド実装はこのリクエストの範囲外です。
 
     try {
       const response = await fetch("/api/customs", {
@@ -83,6 +160,7 @@ export default function CreateCustomPage() {
           polandMatchPoint,
           tdmKillPoint,
           tdmRankPoints,
+          defaultTeams: defaultTeamsArray, // デフォルトチームのデータをペイロードに含める
         }),
       });
 
@@ -107,6 +185,7 @@ export default function CreateCustomPage() {
   const handleReset = () => {
     setPointMode("algs");
     setCustomName("");
+    setDefaultTeamsInput(""); // デフォルトチーム入力をリセット
     setAlgsKillCap("1000");
     setAlgsKillPoint("1");
     setPolandKillPoint("1");
@@ -123,7 +202,6 @@ export default function CreateCustomPage() {
           <PencilLine />
           情報を入力
         </h2>
-        <Progress value={10} />
       </div>
       <Card className="w-full max-w-3xl mx-auto">
         <CardHeader>
@@ -142,7 +220,9 @@ export default function CreateCustomPage() {
           <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
-                <Label htmlFor="text">
+                <Label htmlFor="custom_name">
+                  {" "}
+                  {/* htmlForを修正 */}
                   カスタム名<span className="text-red-500 text-xs">必須</span>
                 </Label>
                 <Input
@@ -154,8 +234,66 @@ export default function CreateCustomPage() {
                   onChange={(e) => setCustomName(e.target.value)}
                 />
               </div>
+              <div>
+                <Label htmlFor="default_teams">デフォルトチーム</Label>{" "}
+                {/* htmlForを追加 */}
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="default" className="my-1">
+                      追加する
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>デフォルトチーム</DialogTitle>
+                      <DialogDescription>
+                        デフォルトで表示されるチームを追加します。
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="min-h-96 max-h-96">
+                      <Textarea
+                        placeholder={`カンマ区切り\nチーム1,チーム2,チーム3, ...\n\n改行区切り\nチーム1\nチーム2\nチーム3\n...\n\n読点区切り\nチーム1、チーム2、チーム3、 ...\n\nJson形式\n{ \n  "1": "チーム1",\n  "2": "チーム2",\n  "3": "チーム3"\n}`}
+                        className="h-full resize-none"
+                        value={defaultTeamsInput} // stateと紐づけ
+                        onChange={handleDefaultTeamsInputChange} // ハンドラを設定
+                      />
+                    </div>
+                    <DialogFooter>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Label
+                            htmlFor="json-file-upload"
+                            className="flex items-center gap-2 cursor-pointer px-4 py-2 border text-gray-900 rounded-md hover:bg-gray-200 transition-colors"
+                          >
+                            <Input
+                              id="json-file-upload"
+                              type="file"
+                              className="sr-only"
+                              accept=".json" // JSONファイルのみ受け付けるように指定
+                              onChange={handleJsonFileUpload} // ハンドラを設定
+                            />
+                            Jsonで追加
+                          </Label>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            ・ファイルを持っている方
+                            <br />
+                            ・有識者向け
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                      <DialogClose asChild>
+                        <Button variant="default">閉じる</Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
               <div className="grid gap-2">
-                <Label htmlFor="password">
+                <Label htmlFor="point_mode">
+                  {" "}
+                  {/* htmlForを修正 */}
                   ポイントモード
                   <span className="text-red-500 text-xs">必須</span>
                 </Label>
@@ -173,11 +311,13 @@ export default function CreateCustomPage() {
               {pointMode === "algs" && (
                 <>
                   <div className="grid gap-2">
-                    <Label htmlFor="password">
+                    <Label htmlFor="algs_kill_cap">
+                      {" "}
+                      {/* htmlForを修正 */}
                       キルポイント上限
                       <span className="text-red-500 text-xs">必須</span>
                       <span className="block text-xs text-muted-foreground mt-1">
-                        デフォルトで使用、最初に追加したマッチに適用されます。
+                        デフォルトで使用される値
                       </span>
                     </Label>
                     <Select
@@ -215,13 +355,18 @@ export default function CreateCustomPage() {
                     </Select>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="password">
+                    <Label htmlFor="algs_kill_point">
+                      {" "}
+                      {/* htmlForを修正 */}
                       キルポイント
                       <span className="text-red-500 text-xs">必須</span>
+                      <span className="block text-xs text-muted-foreground mt-1">
+                        デフォルトで使用される値
+                      </span>
                     </Label>
                     <div className="flex items-center gap-2">
                       <Input
-                        id="kill_point"
+                        id="algs_kill_point" // idを修正
                         type="number"
                         value={algsKillPoint}
                         onChange={(e) => setAlgsKillPoint(e.target.value)}
@@ -236,13 +381,18 @@ export default function CreateCustomPage() {
               {pointMode === "poland" && (
                 <>
                   <div className="grid gap-2">
-                    <Label htmlFor="password">
+                    <Label htmlFor="poland_kill_point">
+                      {" "}
+                      {/* htmlForを修正 */}
                       キルポイント
                       <span className="text-red-500 text-xs">必須</span>
+                      <span className="block text-xs text-muted-foreground mt-1">
+                        デフォルトで使用される値
+                      </span>
                     </Label>
                     <div className="flex items-center gap-2">
                       <Input
-                        id="kill_point"
+                        id="poland_kill_point" // idを修正
                         type="number"
                         value={polandKillPoint}
                         onChange={(e) => setPolandKillPoint(e.target.value)}
@@ -253,16 +403,37 @@ export default function CreateCustomPage() {
                     </div>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="password">
-                      PolandRuleマッチポイント
+                    <Label htmlFor="poland_kill_point_limit">
+                      {" "}
+                      {/* htmlForを修正 */}
+                      キルポイント上限
                       <span className="text-red-500 text-xs">必須</span>
                       <span className="block text-xs text-muted-foreground mt-1">
-                        デフォルトで使用、最初に追加したマッチに適用されます。
+                        デフォルトで使用される値
                       </span>
                     </Label>
                     <div className="flex items-center gap-2">
                       <Input
-                        id="kill_point"
+                        id="poland_kill_point_limit" // idを修正
+                        type="number"
+                        defaultValue="9999" // state管理していないが、idとhtmlForを修正
+                        required
+                        className="w-24"
+                      />
+                      <p>pt</p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="poland_match_point">
+                      {" "}
+                      {/* htmlForを修正 */}
+                      マッチポイント
+                      <span className="text-red-500 text-xs">必須</span>
+                    </Label>
+                    <div className="flex items-center gap-2">
+                      <Input
+                        id="poland_match_point" // idを修正
                         type="number"
                         value={polandMatchPoint}
                         onChange={(e) => setPolandMatchPoint(e.target.value)}
@@ -277,13 +448,15 @@ export default function CreateCustomPage() {
               {pointMode === "tdm" && (
                 <>
                   <div className="grid gap-2">
-                    <Label htmlFor="password">
+                    <Label htmlFor="tdm_kill_point">
+                      {" "}
+                      {/* htmlForを修正 */}
                       キルポイント
                       <span className="text-red-500 text-xs">必須</span>
                     </Label>
                     <div className="flex items-center gap-2">
                       <Input
-                        id="kill_point"
+                        id="tdm_kill_point" // idを修正
                         type="number"
                         value={tdmKillPoint}
                         onChange={(e) => setTdmKillPoint(e.target.value)}
@@ -294,12 +467,11 @@ export default function CreateCustomPage() {
                     </div>
                   </div>
                   <div className="grid gap-2">
-                    <Label htmlFor="password">
+                    <Label htmlFor="tdm_rank_points">
+                      {" "}
+                      {/* htmlForを修正 */}
                       Team Death Match順位ポイント
                       <span className="text-red-500 text-xs">必須</span>
-                      <span className="block text-xs text-muted-foreground mt-1">
-                        デフォルトで使用、最初に追加したマッチに適用されます。
-                      </span>
                     </Label>
                     <Dialog>
                       <DialogTrigger asChild className="w-24">
@@ -346,11 +518,13 @@ export default function CreateCustomPage() {
               )}
               {(pointMode === "algs" || pointMode === "poland") && (
                 <div className="grid gap-2">
-                  <Label htmlFor="password">
+                  <Label htmlFor="algs_rank_points">
+                    {" "}
+                    {/* htmlForを修正 */}
                     順位ポイント
                     <span className="text-red-500 text-xs">必須</span>
                     <span className="block text-xs text-muted-foreground mt-1">
-                      デフォルトで使用、最初に追加したマッチに適用されます。
+                      デフォルトで使用される値
                     </span>
                   </Label>
                   <Dialog>

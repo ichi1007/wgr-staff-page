@@ -30,65 +30,85 @@ interface MatchDataInput {
   player_results: PlayerResultInput[];
 }
 
+// リクエストボディの型定義 - ポイント設定を再度含める
+interface PostRequestBody {
+  matchData: MatchDataInput;
+  killPoint: number; // リクエストボディから受け取るキルポイント (1キルあたりのポイント)
+  placementPoint: number[]; // リクエストボディから受け取る順位ポイント配列
+  killPointLimit: number | null; // リクエストボディから受け取るキルポイント上限
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    // リクエストボディからmatchDataとポイント設定を取得
     const {
       matchData,
-      killPoint,
-    }: { matchData: MatchDataInput; killPoint: number } = await request.json();
+      killPoint, // リクエストボディから取得
+      placementPoint, // リクエストボディから取得
+      killPointLimit, // リクエストボディから取得
+    }: PostRequestBody = await request.json();
 
-    // トランザクションでマッチデータを保存
     const result = await prisma.$transaction(async (tx) => {
-      // CustomItemとCustomSettingを取得
+      // CustomItem と CustomSetting をDBから取得 (ポイントモードとマッチポイント閾値のため)
       const customItem = await tx.customItem.findFirst({
         where: { customsId: id },
         include: {
-          customSetting: {
-            include: {
-              placementPoint: true,
-            },
-          },
+          customSetting: true, // PlacementPointはリクエストボディから受け取るため不要
         },
       });
 
       if (!customItem || !customItem.customSetting) {
-        throw new Error("CustomItem or CustomSetting not found");
+        throw new Error(
+          "CustomItem or CustomSetting not found for custom ID: " + id
+        );
       }
 
-      // PlacementPointを配列に変換
-      const placementPoints = customItem.customSetting.placementPoint
-        ? [
-            customItem.customSetting.placementPoint.place1,
-            customItem.customSetting.placementPoint.place2,
-            customItem.customSetting.placementPoint.place3,
-            customItem.customSetting.placementPoint.place4,
-            customItem.customSetting.placementPoint.place5,
-            customItem.customSetting.placementPoint.place6,
-            customItem.customSetting.placementPoint.place7,
-            customItem.customSetting.placementPoint.place8,
-            customItem.customSetting.placementPoint.place9,
-            customItem.customSetting.placementPoint.place10,
-            customItem.customSetting.placementPoint.place11,
-            customItem.customSetting.placementPoint.place12,
-            customItem.customSetting.placementPoint.place13,
-            customItem.customSetting.placementPoint.place14,
-            customItem.customSetting.placementPoint.place15,
-            customItem.customSetting.placementPoint.place16,
-            customItem.customSetting.placementPoint.place17,
-            customItem.customSetting.placementPoint.place18,
-            customItem.customSetting.placementPoint.place19,
-            customItem.customSetting.placementPoint.place20,
-          ]
-        : Array(20).fill(0);
+      const customSetting = customItem.customSetting;
 
-      // 設定されたキルポイントを使用
-      const settingKillPoint = customItem.customSetting.killPoint || killPoint;
+      // 計算に使用するポイント設定を決定
+      // リクエストボディで受け取った値を優先し、ポイントモードによって適用する値を制御
+      let finalKillPoint: number;
+      let finalKillPointLimit: number | null;
+      let finalPlacementPoints: number[];
+      const matchPointThreshold = customSetting.matchPoint; // マッチポイント閾値はDBから取得
 
-      // CustomDataを作成
+      // ALGSまたはPoland Ruleの場合、リクエストボディのキルポイント、上限、順位ポイントを使用
+      if (customSetting.algs || customSetting.polandRule) {
+        finalKillPoint = killPoint;
+        finalKillPointLimit = killPointLimit;
+        finalPlacementPoints = placementPoint;
+      } else if (customSetting.teamDeathMatch) {
+        // TDMモードの場合、リクエストボディのキルポイントと順位ポイントを使用
+        // TDMにはキルポイント上限やBR形式の順位ポイントは適用しないと仮定
+        finalKillPoint = killPoint;
+        finalKillPointLimit = null; // TDMには上限なしと仮定
+        finalPlacementPoints = placementPoint; // TDMの順位ポイントもDialogで設定可能になっているため
+        // 注意: TDMの順位ポイントは通常2つだけですが、ここでは汎用的に配列として扱います。
+        // TDMの計算ロジックは別途調整が必要かもしれません。
+      } else {
+        // UnknownまたはCustom Ruleの場合、リクエストボディの値をそのまま使用
+        finalKillPoint = killPoint;
+        finalKillPointLimit = killPointLimit;
+        finalPlacementPoints = placementPoint;
+      }
+
+      // ログ出力（デバッグ用）
+      console.log("Received points from client:", {
+        killPoint,
+        placementPoint,
+        killPointLimit,
+      });
+      console.log("Calculated points to use:", {
+        finalKillPoint,
+        finalKillPointLimit,
+        finalPlacementPoints,
+        matchPointThreshold,
+      });
+
       const customData = await tx.customData.create({
         data: {
           customItemId: customItem.id,
@@ -98,14 +118,15 @@ export async function POST(
         },
       });
 
-      // プレイヤーデータをチーム別に集計
       const teamMap = new Map<
         string,
         { teamNum: number; placement: number; totalKills: number }
-      >(); // 型を明確化
+      >();
 
-      // PlayerResultを作成
       for (const player of matchData.player_results) {
+        // プレイヤーごとのキルポイント計算（プレイヤー個別のキルポイントに上限は適用しない）
+        const playerKillPoint = player.kills * finalKillPoint;
+
         await tx.playerResult.create({
           data: {
             customDataId: customData.id,
@@ -119,11 +140,10 @@ export async function POST(
             damage: player.damageDealt,
             shots: player.shots,
             hits: player.hits,
-            killPoint: player.kills * settingKillPoint,
+            killPoint: playerKillPoint, // 上限適用なしのキルポイント
           },
         });
 
-        // チームデータを集計
         if (!teamMap.has(player.teamName)) {
           teamMap.set(player.teamName, {
             teamNum: player.teamNum,
@@ -131,28 +151,53 @@ export async function POST(
             totalKills: 0,
           });
         }
-        teamMap.get(player.teamName)!.totalKills += player.kills; // 非nullアサーションを追加
+        teamMap.get(player.teamName)!.totalKills += player.kills;
       }
 
-      // TeamResultを作成
-      for (const [teamName, teamData] of teamMap) {
-        const placementPoint = placementPoints[teamData.placement - 1] || 0;
-        const killPoint_team = teamData.totalKills * settingKillPoint;
+      // TeamResultを作成 (winnerはデフォルトのfalseのまま一旦作成)
+      const createdTeamResultIds: string[] = [];
+      const newMatchTeamResults: {
+        name: string;
+        placement: number;
+        id: string;
+      }[] = []; // 今回作成されるTeamResult情報を保持
 
-        await tx.teamResult.create({
+      for (const [teamName, teamData] of teamMap) {
+        // 順位ポイントを計算（配列の範囲外の場合は0）
+        const placementPoint_team =
+          finalPlacementPoints[teamData.placement - 1] || 0; // finalPlacementPointsを使用
+
+        // チーム合計キルポイント計算
+        const rawTeamTotalKillPoint = teamData.totalKills * finalKillPoint;
+
+        // キルポイント上限を適用（上限が設定されている場合のみ）
+        const teamTotalKillPoint =
+          finalKillPointLimit !== null && finalKillPointLimit !== undefined
+            ? Math.min(rawTeamTotalKillPoint, finalKillPointLimit)
+            : rawTeamTotalKillPoint;
+
+        const newTeamResult = await tx.teamResult.create({
           data: {
             customDataId: customData.id,
             name: teamName,
             teamNum: teamData.teamNum,
             placement: teamData.placement,
-            placementPoint: placementPoint,
-            killPoint: killPoint_team,
-            allPoint: placementPoint + killPoint_team,
+            placementPoint: placementPoint_team,
+            killPoint: teamTotalKillPoint, // 上限適用後のキルポイント
+            allPoint: placementPoint_team + teamTotalKillPoint, // 上限適用後の合計ポイント
+            matchPoint: false, // デフォルトはfalse
+            winner: false, // デフォルトはfalse
           },
+        });
+        createdTeamResultIds.push(newTeamResult.id);
+        newMatchTeamResults.push({
+          // 今回作成されたTeamResultの情報を追加
+          name: newTeamResult.name,
+          placement: newTeamResult.placement,
+          id: newTeamResult.id,
         });
       }
 
-      // CustomsのitemCountを更新
       await tx.customs.update({
         where: { id },
         data: {
@@ -162,14 +207,85 @@ export async function POST(
         },
       });
 
+      // --- Match Point & Winner Logic ---
+      // Poland RuleかつmatchPointThresholdが設定されている場合のみ処理を実行
+      if (
+        customSetting.polandRule &&
+        matchPointThreshold !== null &&
+        matchPointThreshold !== undefined
+      ) {
+        // 現在のカスタム大会の全てのTeamResultを取得して合計ポイントを計算
+        const allTeamResults = await tx.teamResult.findMany({
+          where: {
+            customData: {
+              customItem: {
+                customsId: id,
+              },
+            },
+          },
+        });
+
+        const totalPointsMap = new Map<string, number>();
+        allTeamResults.forEach((tr) => {
+          const currentTotal = totalPointsMap.get(tr.name) || 0;
+          totalPointsMap.set(tr.name, currentTotal + tr.allPoint);
+        });
+
+        // Match Point Thresholdを超えたチームを特定
+        const teamsAboveThreshold = Array.from(totalPointsMap.entries())
+          .filter(
+            ([teamName, totalPoints]) => totalPoints >= matchPointThreshold
+          )
+          .map(([teamName]) => teamName);
+
+        // 今回追加したTeamResultの中で、Match Point Thresholdを超えたチームのmatchPointをtrueに更新
+        if (teamsAboveThreshold.length > 0) {
+          await tx.teamResult.updateMany({
+            where: {
+              id: {
+                in: createdTeamResultIds, // 今回作成したTeamResultのIDリストを使用
+              },
+              name: {
+                in: teamsAboveThreshold, // Match Point Thresholdを超えたチーム名に一致
+              },
+            },
+            data: {
+              matchPoint: true, // matchPointをtrueに設定
+            },
+          });
+        }
+
+        // Winner Logic: Match Point Thresholdを超えたチームが、今回追加されたマッチで1位を取った場合
+        const firstPlaceTeamInNewMatch = newMatchTeamResults.find(
+          (tr) => tr.placement === 1
+        );
+
+        if (
+          firstPlaceTeamInNewMatch &&
+          teamsAboveThreshold.includes(firstPlaceTeamInNewMatch.name)
+        ) {
+          await tx.teamResult.update({
+            where: {
+              id: firstPlaceTeamInNewMatch.id, // 今回作成された1位チームのTeamResultのID
+            },
+            data: {
+              winner: true, // winnerをtrueに設定
+            },
+          });
+        }
+      }
+      // --- End Match Point & Winner Logic ---
+
       return { success: true, customDataId: customData.id };
     });
 
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error saving match data:", error);
+    const errorMessage =
+      error instanceof Error ? error.message : "不明なエラー";
     return NextResponse.json(
-      { error: "マッチデータの保存に失敗しました" },
+      { error: "マッチデータの保存に失敗しました", details: errorMessage },
       { status: 500 }
     );
   }

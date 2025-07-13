@@ -19,6 +19,19 @@ export async function GET(
       },
       include: {
         placementPoint: true,
+        customItem: {
+          // customItem を含めることで customs にアクセス可能になる
+          include: {
+            customs: {
+              // customs を含める
+              select: {
+                // spreadsheetId と spreadsheetUrl を選択
+                spreadsheetId: true,
+                spreadsheetUrl: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -36,6 +49,12 @@ export async function GET(
       killPointLimit: customSetting.killPointLimit,
       placementPoint: customSetting.placementPoint,
       matchPoint: customSetting.matchPoint, // matchPointを追加
+      polandkillPointLimit: customSetting.polandkillPointLimit, // Poland Ruleキルポイント上限を追加
+      polandKillPoint: customSetting.polandKillPoint, // Poland Ruleキルポイントを追加
+      defaultTeams: customSetting.defaultTeams, // defaultTeamsを追加
+      // スプレッドシート情報を追加
+      spreadsheetId: customSetting.customItem?.customs?.spreadsheetId || null,
+      spreadsheetUrl: customSetting.customItem?.customs?.spreadsheetUrl || null,
     };
 
     return NextResponse.json(response);
@@ -148,6 +167,7 @@ export async function DELETE(
       });
 
       // PlacementPoint関連を削除
+      // CustomSettingがPlacementPointを参照しているため、CustomSetting削除より前に実行
       await tx.placementPoint.deleteMany({
         where: {
           customSettings: {
@@ -174,8 +194,8 @@ export async function DELETE(
         where: { customsId: id },
       });
 
-      // 最後にCustomsを削除
-      await tx.customs.delete({
+      // 最後にCustomsを削除 (deleteManyに変更)
+      await tx.customs.deleteMany({
         where: { id },
       });
     });

@@ -69,11 +69,21 @@ model Verify {
   user      User?
 }
 
+model Custom {
+  id             String  @id @default(cuid())
+  customsId      String
+  customs        Customs @relation("CustomToCustoms", fields: [customsId], references: [id])
+  spreadsheetId  String?
+  spreadsheetUrl String?
+}
+
 model Customs {
-  id         String       @id @default(uuid())
-  itemCount  Int
-  createdAt  DateTime     @default(now())
-  customItem CustomItem[]
+  id             String       @id @default(cuid())
+  custom         Custom[]     @relation("CustomToCustoms")
+  spreadsheetId  String? // スプレッドシートIDを表すフィールド
+  spreadsheetUrl String? // スプレッドシートURLを表すフィールド
+  itemCount      Int?         @default(0) // アイテム数を表すフィールド
+  CustomItem     CustomItem[]
 }
 
 model CustomItem {
@@ -89,19 +99,23 @@ model CustomItem {
 }
 
 model CustomSetting {
-  id               String          @id @default(uuid())
-  customItemId     String          @unique
-  customItem       CustomItem      @relation(fields: [customItemId], references: [id])
-  customName       String
+  id           String     @id @default(uuid())
+  customItemId String     @unique
+  customItem   CustomItem @relation(fields: [customItemId], references: [id])
+  customName   String
+
+  defaultTeams String[] @default([])
+
   algs             Boolean         @default(false)
   killPointLimit   Int?
   killPoint        Int?
   placementPointId String?
   placementPoint   PlacementPoint? @relation(fields: [placementPointId], references: [id])
 
-  polandRule      Boolean @default(false)
-  polandKillPoint Int?
-  matchPoint      Int?
+  polandRule           Boolean @default(false)
+  polandkillPointLimit Int?
+  polandKillPoint      Int?
+  matchPoint           Int?
 
   teamDeathMatch Boolean @default(false)
   tdmKillPoint   Int?
@@ -172,6 +186,9 @@ model TeamResult {
   placementPoint Float
   killPoint      Float
   allPoint       Float
+
+  matchPoint Boolean @default(false)
+  winner     Boolean @default(false)
 }
 
 model PlayerCountTop {

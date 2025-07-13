@@ -8,13 +8,15 @@ export async function POST(request: NextRequest) {
     const {
       customName,
       pointMode,
-      algsKillCap,
+      algsKillCap, // ALGSのキルポイント上限
       algsKillPoint,
       algsRankPoints,
       polandKillPoint,
       polandMatchPoint,
+      polandkillPointLimit, // Poland Ruleのキルポイント上限を追加
       tdmKillPoint,
       tdmRankPoints,
+      defaultTeams, // defaultTeams を受け取る
     } = await request.json();
 
     const result = await prisma.$transaction(async (tx) => {
@@ -63,24 +65,33 @@ export async function POST(request: NextRequest) {
       }
 
       // CustomSettingを作成
-      const customSettingData = {
+      const customSettingData: any = {
         customItemId: customItem.id,
         customName: customName || "",
+        defaultTeams:
+          defaultTeams && Array.isArray(defaultTeams) ? defaultTeams : [], // defaultTeams配列を直接保存
+
         algs: pointMode === "algs",
         polandRule: pointMode === "poland",
         teamDeathMatch: pointMode === "tdm",
+
+        // ポイントモードに応じてキルポイントとキルポイント上限を設定
         killPointLimit:
-          pointMode === "algs" ? parseInt(algsKillCap || "0") : null,
-        killPoint: pointMode === "algs" ? parseInt(algsKillPoint || "0") : null,
-        placementPointId: placementPointId,
+          pointMode === "algs" ? parseInt(algsKillCap || "0") : null, // ALGSの場合のみ設定
+        killPoint: pointMode === "algs" ? parseInt(algsKillPoint || "0") : null, // ALGSの場合のみ設定
+        placementPointId: placementPointId, // ALGS/Polandの場合のみ設定
+
         polandKillPoint:
-          pointMode === "poland" ? parseInt(polandKillPoint || "0") : null,
+          pointMode === "poland" ? parseInt(polandKillPoint || "0") : null, // Polandの場合のみ設定
         matchPoint:
-          pointMode === "poland" ? parseInt(polandMatchPoint || "0") : null,
+          pointMode === "poland" ? parseInt(polandMatchPoint || "0") : null, // Polandの場合のみ設定
+        polandkillPointLimit:
+          pointMode === "poland" ? parseInt(polandkillPointLimit || "0") : null, // Polandの場合のみ設定
+
         tdmKillPoint:
-          pointMode === "tdm" ? parseInt(tdmKillPoint || "0") : null,
-        tdmPoint1: pointMode === "tdm" ? tdmRankPoints[0] || 0 : null,
-        tdmPoint2: pointMode === "tdm" ? tdmRankPoints[1] || 0 : null,
+          pointMode === "tdm" ? parseInt(tdmKillPoint || "0") : null, // TDMの場合のみ設定
+        tdmPoint1: pointMode === "tdm" ? tdmRankPoints[0] || 0 : null, // TDMの場合のみ設定
+        tdmPoint2: pointMode === "tdm" ? tdmRankPoints[1] || 0 : null, // TDMの場合のみ設定
       };
 
       await tx.customSetting.create({
