@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Folder, ChevronRight, Home } from "lucide-react";
@@ -32,16 +32,12 @@ export default function GoogleDriveSelector({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchFiles(currentFolderId);
-  }, [currentFolderId]);
-
-  const fetchFiles = async (folderId: string | null) => {
+  const fetchFiles = useCallback(async () => {
     setIsLoading(true);
     setError(null); // エラーをリセット
     try {
       const response = await axios.get("/api/google/drive/folders", {
-        params: { folderId: folderId || "root" },
+        params: { folderId: currentFolderId || "root" },
         headers: {
           Authorization: `Bearer ${accessToken}`, // アクセストークンをヘッダーに追加
         },
@@ -59,7 +55,11 @@ export default function GoogleDriveSelector({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentFolderId, accessToken]);
+
+  useEffect(() => {
+    fetchFiles();
+  }, [fetchFiles]);
 
   const handleFolderClick = (folder: DriveFile) => {
     onSelect(folder.id); // シングルクリックで選択

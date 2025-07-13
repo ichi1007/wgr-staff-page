@@ -144,3 +144,23 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function createSheet(auth: any, title: string) {
+  const sheets = google.sheets({ version: "v4", auth });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const response: any = await sheets.spreadsheets.create({
+    requestBody: {
+      properties: {
+        title,
+      },
+    },
+    fields: "spreadsheetId",
+  });
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const sheetId = response.data.spreadsheetId;
+
+  return sheetId;
+}

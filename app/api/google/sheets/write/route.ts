@@ -3,8 +3,7 @@ import { google, sheets_v4 } from "googleapis"; // sheets_v4 をインポート
 
 export async function POST(request: NextRequest) {
   try {
-    const { spreadsheetId, totalResults, matches, customName } =
-      await request.json();
+    const { spreadsheetId, totalResults, matches } = await request.json();
 
     // サービスアカウントの認証
     const auth = new google.auth.GoogleAuth({
@@ -1621,4 +1620,144 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function writeToSheet(auth: any, spreadsheetId: string, data: string[][]) {
+  const sheets = google.sheets({ version: "v4", auth });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const response: any = await sheets.spreadsheets.values.update({
+    spreadsheetId,
+    range: "Total Result!A1",
+    valueInputOption: "RAW",
+    requestBody: {
+      values: data,
+    },
+  });
+  return response;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function getSheetData(auth: any, spreadsheetId: string, range: string) {
+  const sheets = google.sheets({ version: "v4", auth });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const response: any = await sheets.spreadsheets.values.get({
+    spreadsheetId,
+    range,
+    majorDimension: "ROWS",
+  });
+  return response.data.values as any[][] || [];
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function appendToSheet(auth: any, spreadsheetId: string, data: string[][]) {
+  const sheets = google.sheets({ version: "v4", auth });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const response: any = await sheets.spreadsheets.values.append({
+    spreadsheetId,
+    range: "Total Result!A1",
+    valueInputOption: "RAW",
+    requestBody: {
+      values: data,
+    },
+  });
+  return response;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function clearSheet(auth: any, spreadsheetId: string, range: string) {
+  const sheets = google.sheets({ version: "v4", auth });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const response: any = await sheets.spreadsheets.values.clear({
+    spreadsheetId,
+    range,
+  });
+  return response;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function formatSheet(auth: any, spreadsheetId: string, sheetId: number, numColumns: number) {
+  const sheets = google.sheets({ version: "v4", auth });
+
+  const requests: any[] = [
+    {
+      updateSheetProperties: {
+        properties: {
+          sheetId,
+          gridProperties: {
+            frozenRowCount: 1,
+          },
+        },
+        fields: "gridProperties.frozenRowCount",
+      },
+    },
+    {
+      updateDimensionProperties: {
+        range: {
+          sheetId,
+          dimension: "ROWS",
+          startIndex: 0, // Header row
+          endIndex: 1,
+        },
+        properties: {
+          pixelSize: 40,
+        },
+        fields: "pixelSize",
+      },
+    },
+  ];
+
+  for (let i = 0; i < numColumns; i++) {
+    // Column widths
+    requests.push({
+      updateDimensionProperties: {
+        range: {
+          sheetId,
+          dimension: "COLUMNS",
+          startIndex: i,
+          endIndex: i + 1,
+        },
+        properties: {
+          pixelSize: 100,
+        },
+        fields: "pixelSize",
+      },
+    });
+  }
+
+  // Banding
+  requests.push({
+    addBanding: {
+      bandedRange: {
+        range: {
+          sheetId,
+          startRowIndex: 0,
+          endRowIndex: 1,
+          startColumnIndex: 0,
+          endColumnIndex: numColumns,
+        },
+        rowProperties: {
+          headerColor: {
+            red: 0.23,
+            green: 0.23,
+            blue: 0.23,
+          },
+          firstBandColor: {
+            red: 1.0,
+            green: 1.0,
+            blue: 1.0,
+          },
+          secondBandColor: {
+            red: 0.95,
+            green: 0.95,
+            blue: 0.95,
+          },
+        },
+      },
+    },
+  });
+
+  // Execute the batchUpdate request
+  const batchUpdateRequest: any = { requests };
+  await sheets.spreadsheets.batchUpdate(batchUpdateRequest);
 }

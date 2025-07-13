@@ -55,8 +55,6 @@ import conversionDataRaw from "@/components/Conversion.json";
 import Image from "next/image";
 import GoogleLogo from "@/public/svg/Google__G__logo.svg";
 import GoogleDriveSelector from "@/components/GoogleDriveSelector";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // Alert コンポーネントをインポート
-import { Terminal } from "lucide-react"; // Terminal アイコンをインポート
 import { Textarea } from "@/components/ui/textarea"; // Textarea コンポーネントをインポート
 import {
   Tooltip,

@@ -31,7 +31,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PencilLine, Pickaxe, Save, Trash2 } from "lucide-react";
@@ -661,3 +660,4 @@ export default function CreateCustomPage() {
     </div>
   );
 }
+

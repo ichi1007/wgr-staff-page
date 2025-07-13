@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
       }
 
       // CustomSettingを作成
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const customSettingData: any = {
         customItemId: customItem.id,
         customName: customName || "",
