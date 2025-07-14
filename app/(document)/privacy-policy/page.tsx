@@ -20,16 +20,35 @@ export default function CreatePage() {
             <li>ユーザー名、メールアドレスなどのアカウント情報</li>
             <li>利用履歴、アクセスログ、IPアドレス等の技術情報</li>
             <li>Discordなどの外部認証プロバイダから提供される情報</li>
+            <li>
+              Google Drive および Google Spreadsheet
+              連携機能を利用する場合、連携対象のファイル名、ファイルID、内容の一部または全部、および関連するメタデータ
+            </li>
           </ul>
           <h2 className="mt-4 text-lg font-semibold">2. 利用目的</h2>
           <ul className="list-disc pl-6">
             <li>サービス提供および運営のため</li>
             <li>不正行為の防止、トラブル対応のため</li>
             <li>利用状況の分析、改善のため</li>
+            <li>
+              Google Drive および Google Spreadsheet
+              連携機能の提供、および当該機能を通じて取得したデータの処理のため
+            </li>
           </ul>
           <h2 className="mt-4 text-lg font-semibold">3. 第三者提供</h2>
           <p>
             ユーザーの同意がある場合、または法令に基づく場合を除き、第三者に個人情報を提供することはありません。
+            ただし、Google Drive および Google Spreadsheet
+            連携機能において、Google API
+            を通じて取得した情報は、Googleのプライバシーポリシー（
+            <Link
+              href="https://policies.google.com/privacy"
+              className="underline"
+              target="_blank"
+            >
+              https://policies.google.com/privacy
+            </Link>
+            ）に基づき取り扱われます。
           </p>
           <h2 className="mt-4 text-lg font-semibold">4. Cookie等の使用</h2>
           <p>
@@ -38,6 +57,8 @@ export default function CreatePage() {
           <h2 className="mt-4 text-lg font-semibold">5. 情報の管理</h2>
           <p>
             取得した情報は適切な手段で安全に管理し、漏洩・改ざん等の防止に努めます。
+            Google API
+            を通じて取得したユーザーデータは、サービスの提供に必要な範囲でのみ利用し、厳重に管理します。
           </p>
           <h2 className="mt-4 text-lg font-semibold">6. ユーザーの権利</h2>
           <p>
