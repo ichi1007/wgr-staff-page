@@ -132,6 +132,5 @@ html body[data-scroll-locked] {
 .oswald {
   font-family: "Oswald", sans-serif;
   font-optical-sizing: auto;
-  font-weight: 500;
   font-style: normal;
 }
