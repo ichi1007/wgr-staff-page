@@ -195,18 +195,20 @@ export default function ResultPage() {
                     idx % 2 === 0 ? "bg-[#dadada]" : "bg-[#ffffff]"
                   } grid grid-cols-6 text-black text-2xl oswald text-center h-[56px] flex items-center my-2`}
                 >
-                  <p>{team.placement}</p>
-                  <p className="col-span-2">{team.name}</p>
-                  <p>{team.killPoint}</p>
-                  <p>{team.placementPoint}</p>
+                  <p className="font-[500]">{team.placement}</p>
+                  <p className="col-span-2 font-[500]">{team.name}</p>
+                  <p className="font-[500]">{team.killPoint}</p>
+                  <p className="font-[500]">{team.placementPoint}</p>
                   <p
-                    className={
-                      team.winner
-                        ? "text-red-600 font-extrabold"
-                        : team.matchPoint
-                        ? "text-yellow-500 font-extrabold"
-                        : ""
-                    }
+                    className={`font-[500]
+                      ${
+                        team.winner
+                          ? "text-red-600 font-extrabold"
+                          : team.matchPoint
+                          ? "text-yellow-500 font-extrabold"
+                          : ""
+                      }
+                    `}
                   >
                     {team.allPoint}
                   </p>
