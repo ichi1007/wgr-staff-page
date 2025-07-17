@@ -166,9 +166,14 @@ export async function POST(
       }[] = []; // TeamResult情報を保持
 
       for (const [teamName, teamData] of teamMap) {
-        // 順位ポイントを計算（配列の範囲外の場合は0）
-        const placementPoint_team =
-          finalPlacementPoints[teamData.placement - 1] || 0; // finalPlacementPointsを使用
+        // 順位ポイントを計算（配列の範囲外やundefined/nullの場合は0）
+        let placementPoint_team = finalPlacementPoints[teamData.placement - 1];
+        if (
+          typeof placementPoint_team !== "number" ||
+          isNaN(placementPoint_team)
+        ) {
+          placementPoint_team = 0;
+        }
 
         // チーム合計キルポイント計算
         const rawTeamTotalKillPoint = teamData.totalKills * finalKillPoint;
