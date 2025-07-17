@@ -1,0 +1,97 @@
+.team_info {
+  font-family: "Oswald", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+  width: 1920px;
+  height: 1080px;
+  position: relative;
+}
+
+.team_info_container {
+  position: absolute;
+  bottom: 29%;
+  left: 35px;
+  width: 350px;
+  height: 200px;
+  background-image: url("/img/teamInfo_2.png");
+  object-fit: cover;
+  background-size: cover;
+  background-position: center;
+}
+
+.team_info_header {
+  display: flex;
+  align-items: center;
+  padding: 15px 5px 5px 0px;
+  margin-left: 15px;
+  justify-content: space-between;
+}
+
+.team_info_header_teamname {
+  background-image: url("/svg/teamInfo_1.svg");
+  object-fit: cover;
+  background-size: cover;
+  background-position: center;
+  color: #ffffff;
+  font-size: 1rem;
+  width: 220px;
+  padding-left: 10px;
+
+  & span {
+    padding-right: 5px;
+  }
+}
+
+.team_info_header_points {
+  display: flex;
+  align-items: center;
+  padding-right: 10px;
+}
+
+.team_info_header_point_rank,
+.team_info_header_point_score {
+  background-image: url("/svg/teamInfo_3.svg");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.team_info_header_point_rank,
+.team_info_header_point_score {
+  width: 40px;
+}
+
+.team_info_header_point_text {
+  color: #000000;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.team_info_players {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.team_info_player_1_avatar,
+.team_info_player_2_avatar,
+.team_info_player_3_avatar {
+  width: 100px;
+  height: 100px;
+  background-color: #a1a1a1;
+}
+
+.team_info_player_1_name,
+.team_info_player_2_name,
+.team_info_player_3_name {
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-align: center;
+}

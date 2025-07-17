@@ -1,0 +1,12 @@
+.inventoryBox {
+  background-image: url("/svg/iibenntori.svg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  height: 70px;
+  width: 103px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: -15px;
+}

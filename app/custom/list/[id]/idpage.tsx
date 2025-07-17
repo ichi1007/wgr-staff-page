@@ -61,6 +61,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"; // Tooltip コンポーネントをインポート
+import { Switch } from "@/components/ui/switch";
 
 // Conversion.jsonの型を定義
 interface ConversionData {
@@ -1457,14 +1458,20 @@ export default function CustomIdPageComp() {
                               )}
                         </span>
                       </h3>
-                      <Button
-                        variant="destructive"
-                        onClick={() => handleDeleteMatch(match.id)}
-                        disabled={isLoading}
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        マッチを削除
-                      </Button>
+                      <div className="flex items-center gap-3">
+                        <div className="text-center gap-3">
+                          <Label>画像表示</Label>
+                          <Switch />
+                        </div>
+                        <Button
+                          variant="destructive"
+                          onClick={() => handleDeleteMatch(match.id)}
+                          disabled={isLoading}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          マッチを削除
+                        </Button>
+                      </div>
                     </div>
                     <div className="grid grid-cols-[80px_1fr_80px_80px_80px] mt-5 bg-[#262626] text-white font-extrabold px-5 py-3">
                       <p>順位</p>

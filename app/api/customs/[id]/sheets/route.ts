@@ -5,11 +5,11 @@ const prisma = new PrismaClient();
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> } // params は Promise<object>
+  { params }: { params: { id: string } } // params は Promise ではありません
 ) {
   try {
     const { spreadsheetId, url } = await request.json();
-    const { id: customId } = await params; // params を await して id を取得し、customId に代入
+    const { id: customId } = params; // params から await を削除
 
     // カスタム大会にスプレッドシートIDを保存
     await prisma.customs.update({

@@ -160,7 +160,10 @@ export async function POST(
         name: string;
         placement: number;
         id: string;
-      }[] = []; // 今回作成されるTeamResult情報を保持
+        placementPoint: number;
+        killPoint: number;
+        allPoint: number;
+      }[] = []; // TeamResult情報を保持
 
       for (const [teamName, teamData] of teamMap) {
         // 順位ポイントを計算（配列の範囲外の場合は0）
@@ -191,12 +194,42 @@ export async function POST(
         });
         createdTeamResultIds.push(newTeamResult.id);
         newMatchTeamResults.push({
-          // 今回作成されたTeamResultの情報を追加
           name: newTeamResult.name,
           placement: newTeamResult.placement,
           id: newTeamResult.id,
+          placementPoint: newTeamResult.placementPoint,
+          killPoint: newTeamResult.killPoint,
+          allPoint: newTeamResult.allPoint,
         });
       }
+
+      // --- CustomDataAll & TeamData 保存処理 ---
+      // 既存のCustomDataAllがなければ新規作成
+      let customDataAll = await tx.customDataAll.findUnique({
+        where: { customItemId: customItem.id },
+      });
+      if (!customDataAll) {
+        customDataAll = await tx.customDataAll.create({
+          data: {
+            customItemId: customItem.id,
+          },
+        });
+      }
+
+      // TeamDataを追加（今回のマッチ分のみ追加）
+      for (const team of newMatchTeamResults) {
+        await tx.teamData.create({
+          data: {
+            customDataAllId: customDataAll.id,
+            placement: team.placement,
+            teamName: team.name,
+            placementPoint: Math.round(team.placementPoint),
+            killPoint: Math.round(team.killPoint),
+            allPoint: Math.round(team.allPoint),
+          },
+        });
+      }
+      // --- End CustomDataAll & TeamData 保存処理 ---
 
       await tx.customs.update({
         where: { id },

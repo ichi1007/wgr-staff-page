@@ -102,6 +102,28 @@ export async function POST(request: NextRequest) {
       return { customsId: customs.id, customItemId: customItem.id };
     });
 
+    // ユーザーIDに対応するoverlay設定が存在しない場合、初期設定を作成
+    const userId = request.headers.get("x-user-id"); // ヘッダーからuserIdを取得
+    if (userId) {
+      const existingOverlay = await prisma.overlay.findUnique({
+        where: { userId: userId },
+      });
+
+      if (!existingOverlay) {
+        await prisma.overlay.create({
+          data: {
+            userId: userId,
+            overlayCustomName: "WGR CUP",
+            overlayMatchNumber: 1,
+            scoreBar: true,
+            teamInfo: true,
+            playerInventory: true,
+            teamDestruction: true,
+          },
+        });
+      }
+    }
+
     return NextResponse.json(result);
   } catch (error) {
     console.error("Error creating custom:", error);

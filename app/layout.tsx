@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { Noto_Sans_JP, Noto_Sans } from "next/font/google";
 import "./globals.css";
-import HeaderComp from "@/components/Header";
-import FooterComp from "@/components/Footer";
-import AccountButton from "@/components/AccountButton";
 import SessionWrapper from "@/components/SessionWrapper";
 import AuthGuard from "../components/auth-guard";
 import Providers from "./providers";
@@ -34,17 +31,9 @@ export default function RootLayout({
         className={`${Noto_sans_jp.variable} ${Noto_sans.variable} antialiased`}
       >
         <Providers>
-          <AuthGuard>
-            <SessionWrapper>
-              <HeaderComp />
+          <SessionWrapper>
               <div>{children}</div>
-              <FooterComp />
-              {/* 左下固定のアカウントボタン */}
-              <div className="fixed bottom-5 left-5 z-50">
-                <AccountButton />
-              </div>
-            </SessionWrapper>
-          </AuthGuard>
+          </SessionWrapper>
         </Providers>
       </body>
     </html>

@@ -8,19 +8,20 @@ generator client {
 }
 
 model User {
-  id        String     @id
+  id        String     @id @default(uuid()) // 修正: UUIDをデフォルト値に設定
   name      String
   email     String     @unique
   createdAt DateTime   @default(now())
   status    Boolean    @default(false)
   verifyId  String?    @unique
   verify    Verify?    @relation(fields: [verifyId], references: [id])
-  discord   Discord?
-  userRoles UserRole[]
-  userTeams UserTeam[]
+  discord   discord?
+  userRoles UserRole[] // 修正: リレーションを正しく設定
+  userTeams UserTeam[] // 修正: リレーションを正しく設定
+  overlay   overlay?
 }
 
-model Discord {
+model discord {
   discordUserId String  @id
   discordName   String
   avatar        String?
@@ -298,4 +299,17 @@ model TeamData {
   placementPoint  Int
   killPoint       Int
   allPoint        Int
+}
+
+model overlay {
+  id                 String  @id @default(uuid()) // 修正: UUIDをデフォルト値に設定
+  userId             String  @unique
+  User               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  overlayCustomName  String
+  overlayMatchNumber Int
+  scoreBar           Boolean @default(true)
+  teamInfo           Boolean @default(true)
+  playerInventory    Boolean @default(true)
+  teamDestruction    Boolean @default(true)
+  observerName       String  @default("")
 }
