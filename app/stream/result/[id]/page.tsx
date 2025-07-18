@@ -144,18 +144,18 @@ export default function ResultPage() {
         <div className="py-3">
           <div className="gap-3 w-full grid grid-cols-2 px-7">
             <div className="bg-[#73abff] grid grid-cols-6 text-black text-2xl font-bold oswald text-center py-4">
-              <p className="font-extrabold">順位</p>
-              <p className="col-span-2 font-extrabold">チーム名</p>
-              <p className="font-extrabold">KILL</p>
-              <p className="font-extrabold">順位PT</p>
-              <p className="font-extrabold">TOTAL</p>
+              <p className="font-extrabold oswald">順位</p>
+              <p className="col-span-2 font-extrabold oswald">チーム名</p>
+              <p className="font-extrabold oswald">KILL</p>
+              <p className="font-extrabold oswald">順位PT</p>
+              <p className="font-extrabold oswald">TOTAL</p>
             </div>
             <div className="bg-[#73abff] grid grid-cols-6 text-black text-2xl font-bold oswald text-center py-4">
-              <p className="font-extrabold">順位</p>
-              <p className="col-span-2 font-extrabold">チーム名</p>
-              <p className="font-extrabold">KILL</p>
-              <p className="font-extrabold">順位PT</p>
-              <p className="font-extrabold">TOTAL</p>
+              <p className="font-extrabold oswald">順位</p>
+              <p className="col-span-2 font-extrabold oswald">チーム名</p>
+              <p className="font-extrabold oswald">KILL</p>
+              <p className="font-extrabold oswald">順位PT</p>
+              <p className="font-extrabold oswald">TOTAL</p>
             </div>
           </div>
           <div className="gap-3 w-full grid grid-cols-2 px-7 py-1">
@@ -167,12 +167,12 @@ export default function ResultPage() {
                     idx % 2 === 0 ? "bg-[#dadada]" : "bg-[#ffffff]"
                   } grid grid-cols-6 text-black text-2xl oswald text-center h-[56px] flex items-center my-2`}
                 >
-                  <p className="font-[500]">{team.placement}</p>
-                  <p className="col-span-2 font-[500]">{team.name}</p>
-                  <p className="font-[500]">{team.killPoint}</p>
-                  <p className="font-[500]">{team.placementPoint}</p>
+                  <p className="font-[500] oswald">{team.placement}</p>
+                  <p className="col-span-2 font-[500] oswald">{team.name}</p>
+                  <p className="font-[500] oswald">{team.killPoint}</p>
+                  <p className="font-[500] oswald">{team.placementPoint}</p>
                   <p
-                    className={`font-[500]
+                    className={`font-[500] oswald
                       ${
                         team.winner
                           ? "text-red-600 font-extrabold"
@@ -195,12 +195,12 @@ export default function ResultPage() {
                     idx % 2 === 0 ? "bg-[#dadada]" : "bg-[#ffffff]"
                   } grid grid-cols-6 text-black text-2xl oswald text-center h-[56px] flex items-center my-2`}
                 >
-                  <p className="font-[500]">{team.placement}</p>
-                  <p className="col-span-2 font-[500]">{team.name}</p>
-                  <p className="font-[500]">{team.killPoint}</p>
-                  <p className="font-[500]">{team.placementPoint}</p>
+                  <p className="font-[500] oswald">{team.placement}</p>
+                  <p className="col-span-2 font-[500] oswald">{team.name}</p>
+                  <p className="font-[500] oswald">{team.killPoint}</p>
+                  <p className="font-[500] oswald">{team.placementPoint}</p>
                   <p
-                    className={`font-[500]
+                    className={`font-[500] oswald
                       ${
                         team.winner
                           ? "text-red-600 font-extrabold"
