@@ -2,9 +2,14 @@
 @import "tw-animate-css";
 
 @font-face {
+  font-family: "OswaldBold";
+  src: url("/fonts/Oswald-Bold.ttf") format("truetype");
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
   font-family: "Oswald";
-  src: url("/fonts/oswald.ttf") format("truetype");
-  font-weight: 700;
+  src: url("/fonts/Oswald-Medium.ttf") format("truetype");
   font-style: normal;
   font-display: swap;
 }
@@ -136,9 +141,13 @@ html body[data-scroll-locked] {
   margin-right: 0 !important;
 }
 
+.oswaldBold {
+  font-family: "OswaldBold", sans-serif !important;
+  font-style: normal !important;
+  font-weight: 800 !important;
+}
 .oswald {
-  font-family: "Oswald", sans-serif;
-  font-optical-sizing: auto;
-  font-style: normal;
-  font-display: swap;
+  font-family: "Oswald", sans-serif !important;
+  font-style: normal !important;
+  font-weight: 600 !important;
 }
