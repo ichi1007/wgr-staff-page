@@ -133,4 +133,5 @@ html body[data-scroll-locked] {
   font-family: "Oswald", sans-serif;
   font-optical-sizing: auto;
   font-style: normal;
+  font-display: swap;
 }
