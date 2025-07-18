@@ -8,8 +8,8 @@
   font-display: swap;
 }
 @font-face {
-  font-family: "Oswald";
-  src: url("https://whitegrimreaper.ichi10.com/fonts/Oswald-Medium.ttf") format("truetype");
+  font-family: "NotoSansJP";
+  src: url("https://whitegrimreaper.ichi10.com/fonts/NotoSansJP-Medium.ttf") format("truetype");
   font-style: normal;
   font-display: swap;
 }
@@ -146,8 +146,8 @@ html body[data-scroll-locked] {
   font-style: normal !important;
   font-weight: 800 !important;
 }
-.oswald {
-  font-family: "Oswald", sans-serif !important;
+.notosans_jp {
+  font-family: "NotoSansJP", sans-serif !important;
   font-style: normal !important;
   font-weight: 500 !important;
 }
