@@ -37,7 +37,7 @@ export default function ResultPage() {
         );
         const scores = await scoresRes.json();
         // 20チーム分埋める（不足分は空文字）
-        const filledTeams = Array(20)
+        let filledTeams = Array(20)
           .fill("")
           .map((_, i) => {
             const team = scores[i];
@@ -51,6 +51,11 @@ export default function ResultPage() {
               winner: team?.winner ?? false,
             };
           });
+        // winner=trueのチームを一番上に表示
+        filledTeams = [
+          ...filledTeams.filter((t) => t.winner),
+          ...filledTeams.filter((t) => !t.winner),
+        ];
         setTeamResults((prev) =>
           JSON.stringify(prev) !== JSON.stringify(filledTeams)
             ? filledTeams
