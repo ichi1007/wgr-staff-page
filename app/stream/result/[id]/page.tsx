@@ -146,15 +146,15 @@ export default function ResultPage() {
             <div className="bg-[#73abff] grid grid-cols-6 text-black text-2xl font-bold text-center py-4">
               <p className="oswaldBold">順位</p>
               <p className="col-span-2 oswaldBold">チーム名</p>
+              <p className="oswaldBold">PP</p>
               <p className="oswaldBold">KILL</p>
-              <p className="oswaldBold">順位PT</p>
               <p className="oswaldBold">TOTAL</p>
             </div>
             <div className="bg-[#73abff] grid grid-cols-6 text-black text-2xl font-bold text-center py-4">
               <p className="oswaldBold">順位</p>
               <p className="col-span-2 oswaldBold">チーム名</p>
+              <p className="oswaldBold">PP</p>
               <p className="oswaldBold">KILL</p>
-              <p className="oswaldBold">順位PT</p>
               <p className="oswaldBold">TOTAL</p>
             </div>
           </div>
@@ -169,8 +169,8 @@ export default function ResultPage() {
                 >
                   <p className="notosans_jp">{team.placement}</p>
                   <p className="col-span-2 notosans_jp">{team.name}</p>
-                  <p className="notosans_jp">{team.killPoint}</p>
                   <p className="notosans_jp">{team.placementPoint}</p>
+                  <p className="notosans_jp">{team.killPoint}</p>
                   <p
                     className={`notosans_jp
                       ${
@@ -197,8 +197,8 @@ export default function ResultPage() {
                 >
                   <p className="notosans_jp">{team.placement}</p>
                   <p className="col-span-2 notosans_jp">{team.name}</p>
-                  <p className="notosans_jp">{team.killPoint}</p>
                   <p className="notosans_jp">{team.placementPoint}</p>
+                  <p className="notosans_jp">{team.killPoint}</p>
                   <p
                     className={`notosans_jp
                       ${
