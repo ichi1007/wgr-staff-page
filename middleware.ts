@@ -47,7 +47,9 @@ export const config = {
       - _errorページ ("/_error")
       - _not-foundページ ("/_not-found")
       - Googleサイト認証ファイル ("/google17b609747b541c79.html")
+      - .well-known配下 ("/.well-known/")
+      - /api/scores ("/api/scores")
     */
-    "/((?!$|public/|auth/|_error|_not-found|api/auth/|api/scores/|api/customs/|api/customs/[^/]+/matches|api/scores/|api/match/|about$|about/|privacy-policy$|privacy-policy/|support$|support/|google17b609747b541c79\\.html$|stream/overlay/|img/|svg/|stream/result/|fonts/).*)",
+    "/((?!$|public/|auth/|_error|_not-found|api/auth/|api/scores$|api/scores/|api/customs/|api/customs/[^/]+/matches|api/match/|about$|about/|privacy-policy$|privacy-policy/|support$|support/|google17b609747b541c79\\.html$|stream/overlay/|img/|svg/|stream/result/|fonts/|\\.well-known/).*)",
   ],
 };
